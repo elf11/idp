@@ -69,6 +69,11 @@ public class Mediator {
 	
 	public void newOutgoingTransfer(String source, String fileName) {
 		int size = 500;
+		for (TransferInfo tranFile : outgoingFiles) {
+			if (tranFile.getFileName().equals(fileName) && tranFile.getPeer().equals(source)) {
+				return;
+			}
+		}
 		int id = gui.addTransfer(source, currentUser, fileName, false);
 		TransferInfo tr = new TransferInfo(source, fileName, id, 1, size, this);
 		outgoingFiles.add(tr);

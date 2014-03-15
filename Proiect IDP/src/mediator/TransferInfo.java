@@ -9,7 +9,7 @@ public class TransferInfo {
 	private int totalSize, transferedSize;
 	private Mediator mediator;
 	
-	public TransferInfo(String fileName, String peer, int id, int type, int totalSize, Mediator mediator) {
+	public TransferInfo(String peer, String fileName, int id, int type, int totalSize, Mediator mediator) {
 		this.fileName = fileName;
 		this.peer = peer;
 		this.type = type;
