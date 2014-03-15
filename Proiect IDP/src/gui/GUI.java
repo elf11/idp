@@ -38,7 +38,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 public class GUI {
-	private static final long serialVersionUID = 1L;
+	
 	private JFrame frmProiectIdp;
 	private final ButtonGroup buttonGroup = new ButtonGroup();
 	private final Action action = new SwingAction();
@@ -92,11 +92,37 @@ public class GUI {
 		filesList = new JList(filesModel);
 		usersList = new JList(usersModel);
 		
+		Vector<String> files1 = new Vector<String>();
+		files1.add("movie.mp4");
+		files1.add("so.pdf");
+		files1.add("idp.pdf");
+		
+		Vector<String> files2 = new Vector<String>();
+		files2.add("movie1.mp4");
+		files2.add("so1.pdf");
+		files2.add("idp1.pdf");
+		
+		Vector<String> files3 = new Vector<String>();
+		files3.add("movie2.mp4");
+		files3.add("so2.pdf");
+		files3.add("idp2.pdf");
+		
+		addUser("mihai", files1);
+		addUser("ionut", files2);
+		addUser("andrei", files3);
+		
 		ListSelectionListener userListSelectionListener = new ListSelectionListener()  {
 			@Override
 			public void valueChanged(ListSelectionEvent event) {
 				// TODO Auto-generated method stub
 				String userName = (String)usersList.getSelectedValue();
+				if (userName != null) {
+					System.out.println(userName);
+					System.out.println(users.get(userName).size());
+					filesModel.clear();
+					for (String file : users.get(userName))
+						filesModel.addElement(file);
+				}
 			}
 		};
 		
@@ -118,13 +144,13 @@ public class GUI {
 		frmProiectIdp.getContentPane().setLayout(null);
 		
 		
-		filesPane = new JScrollPane();
+		filesPane = new JScrollPane(filesList);
 		filesPane.setBounds(0, 33, 1065, 404);
 		frmProiectIdp.getContentPane().add(filesPane);
 		
 		table = new JTable(new TableModel());
 		
-		usersPane = new JScrollPane();
+		usersPane = new JScrollPane(usersList);
 		usersPane.setBounds(1077, 0, 180, 680);
 		frmProiectIdp.getContentPane().add(usersPane);
 		
