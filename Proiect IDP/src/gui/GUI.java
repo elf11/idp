@@ -1,44 +1,21 @@
 package gui;
 
-import java.awt.EventQueue;
-import java.awt.ScrollPane;
-
 import javax.swing.JFrame;
-import javax.swing.JRadioButton;
-
-import java.awt.BorderLayout;
-
 import javax.swing.JTable;
-import javax.swing.ButtonGroup;
-
-import java.awt.Color;
-
 import javax.swing.DefaultListModel;
 import javax.swing.JList;
-import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.SwingConstants;
-import javax.swing.JTextPane;
-import javax.swing.JButton;
-import javax.swing.AbstractAction;
-import javax.swing.SwingWorker;
-
-import java.awt.event.ActionEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-
-import javax.swing.Action;
-
-import java.awt.event.ActionListener;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Vector;
-
-import javax.swing.JScrollBar;
 import javax.swing.JToolBar;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.EventQueue;
+
+import java.util.HashMap;
+import java.util.Vector;
+
 
 import mediator.Mediator;
 
@@ -121,12 +98,9 @@ public class GUI {
 		ListSelectionListener userListSelectionListener = new ListSelectionListener()  {
 			@Override
 			public void valueChanged(ListSelectionEvent event) {
-				// TODO Auto-generated method stub
 				String userName = (String)usersList.getSelectedValue();
 				if (userName != null) {
 					selectedUser = userName;
-					System.out.println(userName);
-					System.out.println(users.get(userName).size());
 					filesModel.clear();
 					for (String file : users.get(userName))
 						filesModel.addElement(file);
@@ -186,7 +160,7 @@ public class GUI {
 	}
 	
 
-	public int addTransfer(String source, String dest, String fileName, Float progress, boolean sending) {
+	public int addTransfer(String source, String dest, String fileName, boolean sending) {
 		Status status;
 		if (sending) {
 			status = Status.Sending;
@@ -194,7 +168,7 @@ public class GUI {
 			status = Status.Receiving;
 		}
 		
-		RowData newRow = new RowData(source, dest, fileName, progress, status);
+		RowData newRow = new RowData(source, dest, fileName, 0f, status);
 		transferTableData.addRow(newRow);
 		return transferTableData.getRowCount() - 1;
 	}

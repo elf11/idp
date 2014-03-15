@@ -35,18 +35,16 @@ class TableModel extends AbstractTableModel {
     public boolean isCellEditable(int row, int col) {
        return false;
     }
-
-    /*
-     * Don't need to implement this method unless your table's
-     * data can change.
-     */
-    public void setValueAt(Object value, int row, int col) {
-        data.get(row).set(col, value);
-        fireTableCellUpdated(row, col);
-    }
     
     public void updateProgressBar(Float value, int row) {
     	data.get(row).set(RowData.PROGRESS, value);
+    	
+    	/* If the transfer is complete, change its status */
+    	if ((float)data.get(row).getCol(RowData.PROGRESS) == 1.0) {
+    		data.get(row).set(RowData.STATUS, Status.Completed);
+    		fireTableCellUpdated(row, RowData.STATUS);
+    	}
+    		
     	fireTableCellUpdated(row, RowData.PROGRESS);
     }
     

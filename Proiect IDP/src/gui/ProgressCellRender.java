@@ -12,8 +12,6 @@ public class ProgressCellRender extends JProgressBar implements TableCellRendere
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-
-	JTable t;
 	
 	public ProgressCellRender() {
 		setStringPainted(true);
@@ -26,9 +24,7 @@ public class ProgressCellRender extends JProgressBar implements TableCellRendere
 
 	@Override
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-        int progress = 45;
-        System.out.println(value);
-        t = table;
+        int progress = 0;
         if (value instanceof Float) {
             progress = Math.round(((Float) value) * 100f);
         }

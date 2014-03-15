@@ -2,17 +2,17 @@ package mediator;
 
 import java.util.HashSet;
 
-import network.Listener;
+import network.Network;
 import gui.*;
 
 public class Mediator {
 
-	GUI gui;
-	Listener listener;
-	public String currentUser;
+	private GUI gui;
+	private Network network;
+	private String currentUser;
 	
-	HashSet<Transfer> incomingFiles = new HashSet<Transfer>();
-	HashSet<Transfer> outgoingFiles = new HashSet<Transfer>();
+	HashSet<TransferInfo> incomingFiles = new HashSet<TransferInfo>();
+	HashSet<TransferInfo> outgoingFiles = new HashSet<TransferInfo>();
 	
 	/**
 	 * Launch the application.
@@ -29,26 +29,28 @@ public class Mediator {
 	Mediator() {
 		currentUser = "_me_";
 		gui = new GUI(this);
-		listener = new Listener(this);
+		network = new Network(this);
 		gui.start();
 	}
 	
 	
 	public void newIncomingTransfer(String dest, String fileName) {
-		int id = gui.addTransfer(currentUser, dest, fileName, ((float)45/200), true);
-		Transfer tr = new Transfer((float) 0, id);
+		int size = 500;
+		int id = gui.addTransfer(currentUser, dest, fileName, true);
+		TransferInfo tr = new TransferInfo(dest, fileName, id, 0, size, this);
 		incomingFiles.add(tr);
-		//listener.transfer(tr);
+		network.startIncomingTransfer(tr);
 	}
 	
 	public void newOutgoingTransfer(String source, String fileName) {
-		int id = gui.addTransfer(source, currentUser, fileName, ((float)45/100), false);
-		Transfer tr = new Transfer((float) 0, id);
+		int size = 500;
+		int id = gui.addTransfer(source, currentUser, fileName, false);
+		TransferInfo tr = new TransferInfo(source, fileName, id, 1, size, this);
 		outgoingFiles.add(tr);
-		//listener.transfer(tr);
+		network.startOutgoingTransfer(tr);
 	}
 
-	public void updateTransfer(Transfer tr, Float i) {
-		gui.updateProgress(tr.row, i);
+	public void updateTransfer(int id, Float i) {
+		gui.updateProgress(id, i);
 	}
 }
