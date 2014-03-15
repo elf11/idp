@@ -33,13 +33,23 @@ import java.util.Vector;
 import javax.swing.JScrollBar;
 import javax.swing.JToolBar;
 
+import mediator.Mediator;
+
 public class GUI {
 	private static final long serialVersionUID = 1L;
+	
+	private final Mediator mediator;
 	private JFrame frmProiectIdp;
-	private final ButtonGroup buttonGroup = new ButtonGroup();
-	private final Action action = new SwingAction();
+
 	private JTable table;
 	private JScrollPane scrollPane;
+	
+	private ProgressCellRender renderer;
+	
+	public GUI(Mediator mediator) {
+		this.mediator = mediator;
+		initialize();
+	}
 	
 	/*
 	 * panel for users and files, list of users and files
@@ -50,6 +60,7 @@ public class GUI {
 	private JList filesList;
 	private DefaultListModel usersModel = new DefaultListModel();
 	private DefaultListModel filesModel = new DefaultListModel();
+	private TableModel transferTableData = new TableModel();
 	
 	/*
 	 * Hash map to associate each user with it's list of files
@@ -62,24 +73,17 @@ public class GUI {
 	/**
 	 * Launch the application.
 	 */
-	public static void start() {
+	public void start() {
+		final GUI window = this;
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					GUI window = new GUI();
 					window.frmProiectIdp.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
 			}
 		});
-	}
-
-	/**
-	 * Create the application.
-	 */
-	public GUI() {
-		initialize();
 	}
 
 	/**
@@ -107,10 +111,11 @@ public class GUI {
 		usersPane.setBounds(1077, 0, 180, 680);
 		frmProiectIdp.getContentPane().add(usersPane);
 		
-		table = new JTable(new TableModel());
+		
+		table = new JTable(transferTableData);
 		table.setBounds(10, 449, 1055, 221);
 		table.setFillsViewportHeight(true);
-		table.getColumnModel().getColumn(4).setCellRenderer(new ProgressCellRender());
+		table.getColumnModel().getColumn(RowData.PROGRESS).setCellRenderer(new ProgressCellRender());
 		
 		scrollPane = new JScrollPane(table);
 		scrollPane.setBounds(0, 449, 1065, 232);
@@ -121,13 +126,21 @@ public class GUI {
 		frmProiectIdp.getContentPane().add(toolBar);
 		
 	}
-	private class SwingAction extends AbstractAction {
-		public SwingAction() {
-			putValue(NAME, "SwingAction");
-			putValue(SHORT_DESCRIPTION, "Some short description");
+
+	public int addTransfer(String source, String dest, String fileName, Float progress, boolean sending) {
+		Status status;
+		if (sending) {
+			status = Status.Sending;
+		} else {
+			status = Status.Receiving;
 		}
-		public void actionPerformed(ActionEvent e) {
-			System.out.println("Hello World!");
-		}
+		
+		RowData newRow = new RowData(source, dest, fileName, progress, status);
+		transferTableData.addRow(newRow);
+		return transferTableData.getRowCount() - 1;
+	}
+
+	public void updateProgress(int row, Float i) {
+		transferTableData.updateProgressBar(i, row);	
 	}
 }
