@@ -38,14 +38,14 @@ public class Mediator {
 		int id = gui.addTransfer(currentUser, dest, fileName, ((float)45/200), true);
 		Transfer tr = new Transfer((float) 0, id);
 		incomingFiles.add(tr);
-		listener.transfer(tr);
+		//listener.transfer(tr);
 	}
 	
 	public void newOutgoingTransfer(String source, String fileName) {
 		int id = gui.addTransfer(source, currentUser, fileName, ((float)45/100), false);
 		Transfer tr = new Transfer((float) 0, id);
 		outgoingFiles.add(tr);
-		listener.transfer(tr);
+		//listener.transfer(tr);
 	}
 
 	public void updateTransfer(Transfer tr, Float i) {
