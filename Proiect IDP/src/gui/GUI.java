@@ -1,20 +1,23 @@
 package gui;
 
+
+import java.awt.EventQueue;
+
 import javax.swing.JFrame;
 import javax.swing.JTable;
 import javax.swing.DefaultListModel;
 import javax.swing.JList;
 import javax.swing.JScrollPane;
-import javax.swing.JToolBar;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.EventQueue;
 
 import java.util.HashMap;
 import java.util.Vector;
+
+import javax.swing.JToolBar;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 
 import mediator.Mediator;
@@ -27,15 +30,7 @@ public class GUI {
 
 	private JTable table;
 	private JScrollPane scrollPane;
-	
-	public GUI(Mediator mediator) {
-		this.mediator = mediator;
-		initialize();
-	}
-	
-	/*
-	 * panel for users and files, list of users and files
-	 */
+	private HashMap<String, Vector<String>> users;
 	private JScrollPane usersPane;
 	private JScrollPane filesPane;
 	private JList<String> usersList;
@@ -46,11 +41,12 @@ public class GUI {
 	
 	private String selectedUser;
 	
-	/*
-	 * Hash map to associate each user with it's list of files
-	 */
-	private HashMap<String, Vector<String>> users = new HashMap<String, Vector<String>>();
-
+	public GUI(Mediator mediator) {
+		this.mediator = mediator;
+		this.users = mediator.getUsers();
+		initialize();
+	}
+	
 	/**
 	 * Launch the application.
 	 */
@@ -75,25 +71,6 @@ public class GUI {
 		// initialize the content of the file and user lists
 		filesList = new JList<String>(filesModel);
 		usersList = new JList<String>(usersModel);
-		
-		Vector<String> files1 = new Vector<String>();
-		files1.add("movie.mp4");
-		files1.add("so.pdf");
-		files1.add("idp.pdf");
-		
-		Vector<String> files2 = new Vector<String>();
-		files2.add("movie1.mp4");
-		files2.add("so1.pdf");
-		files2.add("idp1.pdf");
-		
-		Vector<String> files3 = new Vector<String>();
-		files3.add("movie2.mp4");
-		files3.add("so2.pdf");
-		files3.add("idp2.pdf");
-		
-		addUser("mihai", files1);
-		addUser("ionut", files2);
-		addUser("andrei", files3);
 		
 		ListSelectionListener userListSelectionListener = new ListSelectionListener()  {
 			@Override
