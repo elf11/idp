@@ -24,6 +24,9 @@ import javax.swing.AbstractAction;
 import javax.swing.SwingWorker;
 
 import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 
 import javax.swing.Action;
 
@@ -48,8 +51,6 @@ public class GUI {
 	private JTable table;
 	private JScrollPane scrollPane;
 	
-	private ProgressCellRender renderer;
-	
 	public GUI(Mediator mediator) {
 		this.mediator = mediator;
 		initialize();
@@ -60,11 +61,13 @@ public class GUI {
 	 */
 	private JScrollPane usersPane;
 	private JScrollPane filesPane;
-	private JList usersList;
-	private JList filesList;
-	private DefaultListModel usersModel = new DefaultListModel();
-	private DefaultListModel filesModel = new DefaultListModel();
+	private JList<String> usersList;
+	private JList<String> filesList;
+	private DefaultListModel<String> usersModel = new DefaultListModel<String>();
+	private DefaultListModel<String> filesModel = new DefaultListModel<String>();
 	private TableModel transferTableData = new TableModel();
+	
+	private String selectedUser;
 	
 	/*
 	 * Hash map to associate each user with it's list of files
@@ -93,8 +96,8 @@ public class GUI {
 	private void initialize() {
 		
 		// initialize the content of the file and user lists
-		filesList = new JList(filesModel);
-		usersList = new JList(usersModel);
+		filesList = new JList<String>(filesModel);
+		usersList = new JList<String>(usersModel);
 		
 		Vector<String> files1 = new Vector<String>();
 		files1.add("movie.mp4");
@@ -121,6 +124,7 @@ public class GUI {
 				// TODO Auto-generated method stub
 				String userName = (String)usersList.getSelectedValue();
 				if (userName != null) {
+					selectedUser = userName;
 					System.out.println(userName);
 					System.out.println(users.get(userName).size());
 					filesModel.clear();
@@ -130,16 +134,18 @@ public class GUI {
 			}
 		};
 		
-		ListSelectionListener fileListSelectionListener = new ListSelectionListener() {
-			@Override
-			public void valueChanged(ListSelectionEvent e) {
-				// TODO Auto-generated method stub
-				String fileName = (String)filesList.getSelectedValue();
-			}
+		MouseAdapter mouseFileListener = new MouseAdapter() {
+			 @Override
+			 public void mouseClicked(MouseEvent evt) {
+				 if (evt.getClickCount() == 2) {
+					 String fileName = (String)filesList.getSelectedValue();
+					 mediator.newOutgoingTransfer(selectedUser, fileName);
+				 }
+			 }
 		};
 		
 		usersList.addListSelectionListener(userListSelectionListener);
-		filesList.addListSelectionListener(fileListSelectionListener);
+		filesList.addMouseListener(mouseFileListener);
 		
 		frmProiectIdp = new JFrame();
 		frmProiectIdp.setTitle("Proiect IDP");
