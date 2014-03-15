@@ -21,6 +21,7 @@ import javax.swing.SwingConstants;
 import javax.swing.JTextPane;
 import javax.swing.JButton;
 import javax.swing.AbstractAction;
+import javax.swing.SwingWorker;
 
 import java.awt.event.ActionEvent;
 
@@ -28,10 +29,13 @@ import javax.swing.Action;
 
 import java.awt.event.ActionListener;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Vector;
 
 import javax.swing.JScrollBar;
 import javax.swing.JToolBar;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 public class GUI {
 	private static final long serialVersionUID = 1L;
@@ -55,9 +59,6 @@ public class GUI {
 	 * Hash map to associate each user with it's list of files
 	 */
 	private HashMap<String, Vector<String>> users = new HashMap<String, Vector<String>>();
-	
-	final int VERTICAL_SPLIT = 400;
-	final int HORIZONTAL_SPLIT = 600;
 
 	/**
 	 * Launch the application.
@@ -86,9 +87,29 @@ public class GUI {
 	 * Initialize the contents of the frame.
 	 */
 	private void initialize() {
+		
 		// initialize the content of the file and user lists
 		filesList = new JList(filesModel);
 		usersList = new JList(usersModel);
+		
+		ListSelectionListener userListSelectionListener = new ListSelectionListener()  {
+			@Override
+			public void valueChanged(ListSelectionEvent event) {
+				// TODO Auto-generated method stub
+				String userName = (String)usersList.getSelectedValue();
+			}
+		};
+		
+		ListSelectionListener fileListSelectionListener = new ListSelectionListener() {
+			@Override
+			public void valueChanged(ListSelectionEvent e) {
+				// TODO Auto-generated method stub
+				String fileName = (String)filesList.getSelectedValue();
+			}
+		};
+		
+		usersList.addListSelectionListener(userListSelectionListener);
+		filesList.addListSelectionListener(fileListSelectionListener);
 		
 		frmProiectIdp = new JFrame();
 		frmProiectIdp.setTitle("Proiect IDP");
@@ -121,6 +142,12 @@ public class GUI {
 		frmProiectIdp.getContentPane().add(toolBar);
 		
 	}
+	
+	public void addUser(String username, Vector<String> files) {
+		users.put(username, files);
+		usersModel.addElement(username);
+	}
+	
 	private class SwingAction extends AbstractAction {
 		public SwingAction() {
 			putValue(NAME, "SwingAction");
