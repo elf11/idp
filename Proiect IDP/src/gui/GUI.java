@@ -26,6 +26,7 @@ import javax.swing.Action;
 import java.awt.event.ActionListener;
 
 import javax.swing.JScrollBar;
+import javax.swing.JToolBar;
 
 public class GUI {
 
@@ -68,42 +69,18 @@ public class GUI {
 		frmProiectIdp.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frmProiectIdp.getContentPane().setLayout(null);
 		
-		JRadioButton rdbtnNewRadioButton = new JRadioButton("New radio button");
-		rdbtnNewRadioButton.setBounds(463, 128, 400, 69);
-		JRadioButton button2 = new JRadioButton("Button2");
-		button2.setBounds(840, 185, 63, 54);
-		button2.setForeground(Color.RED);
-		button2.setBackground(Color.GREEN);
-		buttonGroup.add(rdbtnNewRadioButton);
-		buttonGroup.add(button2);
-		frmProiectIdp.getContentPane().add(rdbtnNewRadioButton);
-		frmProiectIdp.getContentPane().add(button2);
-		
-		JTextPane textPane = new JTextPane();
-		textPane.setBounds(203, 253, 296, 40);
-		frmProiectIdp.getContentPane().add(textPane);
-		
-		JButton btnNewButton = new JButton("New button");
-		btnNewButton.setBounds(167, 128, 89, 23);
-		frmProiectIdp.getContentPane().add(btnNewButton);
-		
-		JButton btnNewButton_1 = new JButton("New button");
-		btnNewButton_1.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-			}
-		});
-		btnNewButton_1.setAction(action);
-		btnNewButton_1.setBounds(298, 169, 89, 23);
-		frmProiectIdp.getContentPane().add(btnNewButton_1);
-		
 		table = new JTable(new TableModel());
 		table.setBounds(10, 449, 1055, 221);
 		table.setFillsViewportHeight(true);
 		table.getColumnModel().getColumn(4).setCellRenderer(new ProgressCellRender());
 		
 		scrollPane = new JScrollPane(table);
-		scrollPane.setBounds(10, 449, 1055, 221);
+		scrollPane.setBounds(0, 449, 1065, 232);
 		frmProiectIdp.getContentPane().add(scrollPane);
+		
+		JToolBar toolBar = new JToolBar();
+		toolBar.setBounds(0, 0, 1065, 27);
+		frmProiectIdp.getContentPane().add(toolBar);
 		
 	}
 	private class SwingAction extends AbstractAction {
