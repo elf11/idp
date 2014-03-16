@@ -3,12 +3,21 @@ package gui;
 
 import java.awt.EventQueue;
 
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+import javax.swing.JSeparator;
 import javax.swing.JTable;
 import javax.swing.DefaultListModel;
 import javax.swing.JList;
 import javax.swing.JScrollPane;
 
+import javax.swing.JTextField;
+
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.HashMap;
@@ -18,9 +27,11 @@ import javax.swing.JToolBar;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-
-
 import mediator.Mediator;
+
+import javax.swing.JPanel;
+import javax.swing.JButton;
+import javax.swing.SwingConstants;
 
 public class GUI {
 	
@@ -38,13 +49,22 @@ public class GUI {
 	private DefaultListModel<String> usersModel = new DefaultListModel<String>();
 	private DefaultListModel<String> filesModel = new DefaultListModel<String>();
 	private TableModel transferTableData = new TableModel();
+	private String addFileString = "Add file";
+	private String removeFileString = "Remove file";
+	private String startTranString = "Start Transfer";
+	private JButton addFileButton = new JButton(addFileString);
+	private JButton removeFileButton = new JButton(removeFileString);
+	private JTextField fileNameToAdd;
 	
 	private String selectedUser;
 	private StatusBar statusBar;
+	private String currentUser;
+	private JPanel buttonPane;
 	
 	public GUI(Mediator mediator) {
 		this.mediator = mediator;
 		this.users = mediator.getUsers();
+		this.currentUser = mediator.getUsername();
 		initialize();
 	}
 	
@@ -82,6 +102,12 @@ public class GUI {
 					filesModel.clear();
 					for (String file : users.get(userName))
 						filesModel.addElement(file);
+					if (selectedUser.equals(currentUser)) {
+						removeFileButton.setEnabled(true);
+						removeFileButton.setEnabled(true);
+					} else {
+						removeFileButton.setEnabled(false);
+					}
 				}
 			}
 		};
@@ -91,20 +117,47 @@ public class GUI {
 			 public void mouseClicked(MouseEvent evt) {
 				 if (evt.getClickCount() == 2) {
 					 String fileName = (String)filesList.getSelectedValue();
-					for (int i = 0; i < table.getRowCount(); i++) {
-						if (transferTableData.getValueAt(i, RowData.SOURCE).equals(selectedUser) && 
-								transferTableData.getValueAt(i, RowData.NAME).equals(fileName)) {
-							if (transferTableData.getValueAt(i, RowData.STATUS) != Status.Completed) {
-								return;
-							} else {
-								transferTableData.removeRow(i);
-								continue;
-							}
-						}
-					}
-					mediator.newOutgoingTransfer(selectedUser, fileName);
+					 if (currentUser.equals(selectedUser)) {
+						 statusBar.setText("Cannot transfer file from logged in user.");
+						 return;
+					 }
+					 if (!transferExists(selectedUser, fileName)) {
+						 mediator.newOutgoingTransfer(selectedUser, fileName);
+					 }
 				 }
 			 }
+		};
+		
+		ActionListener startAction = new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				String fileName = (String)filesList.getSelectedValue();
+				if (!transferExists(selectedUser, fileName)) {
+					mediator.newOutgoingTransfer(selectedUser, fileName);
+				}
+			}
+		};
+		
+		ActionListener addFile = new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				String text = "";
+				text = fileNameToAdd.getText();
+				
+				if (text.isEmpty()) {
+					JOptionPane.showMessageDialog(
+							null, "Name is empty!", "Error", JOptionPane.ERROR_MESSAGE);
+					return;
+				}
+				
+				if (filesModel.contains(text)) {
+					JOptionPane.showMessageDialog(
+							null, "Name is duplicated!", "Error", JOptionPane.ERROR_MESSAGE);
+					return;
+				}
+				
+				filesModel.addElement(text);
+			}
 		};
 		
 		usersList.addListSelectionListener(userListSelectionListener);
@@ -145,6 +198,33 @@ public class GUI {
 		statusBar = new StatusBar();
 		statusBar.setBounds(10, 667, 678, 14);
 		frmProiectIdp.getContentPane().add(statusBar);
+
+		fileNameToAdd = new JTextField(10);
+		
+		addFileButton.addActionListener(addFile);
+		addFileButton.setActionCommand(addFileString);
+
+		removeFileButton.setActionCommand(removeFileString);
+		removeFileButton.addActionListener(new RemoveFileListener());
+		removeFileButton.setEnabled(false);
+		
+        JButton startTranButton = new JButton(startTranString);
+        startTranButton.addActionListener(startAction);
+
+
+        buttonPane = new JPanel();
+        buttonPane.setLayout(new BoxLayout(buttonPane,
+                                           BoxLayout.LINE_AXIS));
+        buttonPane.add(addFileButton);
+        buttonPane.add(Box.createHorizontalStrut(1));
+        buttonPane.add(new JSeparator(SwingConstants.VERTICAL));
+        buttonPane.add(Box.createHorizontalStrut(1));
+        buttonPane.add(fileNameToAdd);
+        buttonPane.add(removeFileButton);
+        buttonPane.add(startTranButton);
+        buttonPane.setBorder(BorderFactory.createEmptyBorder(1,1,1,1));
+		
+        toolBar.add(buttonPane);
 	}
 	
 	public void addUser(String username, Vector<String> files) {
@@ -153,7 +233,31 @@ public class GUI {
 		statusBar.setText(username + " has logged in.");
 	}
 	
-
+	public void addFileToUser(String fileName) {
+		
+	}
+	
+	public void removeFileFromUser(String fileName) {
+		if (selectedUser == currentUser) {
+			removeFileButton.addActionListener(new RemoveFileListener());
+		}
+	}
+	
+	private boolean transferExists(String user, String file) {
+		for (int i = 0; i < table.getRowCount(); i++) {
+			if (transferTableData.getValueAt(i, RowData.SOURCE).equals(user) && 
+					transferTableData.getValueAt(i, RowData.NAME).equals(file)) {
+				if (transferTableData.getValueAt(i, RowData.STATUS) != Status.Completed) {
+					return true;
+				} else {
+					transferTableData.removeRow(i);
+					return false;
+				}
+			}
+		}
+		return false;
+	}
+	
 	public int addTransfer(String source, String dest, String fileName, boolean sending) {
 		Status status;
 		if (sending) {
@@ -172,4 +276,24 @@ public class GUI {
 	public void updateProgress(int id, Float val) {
 		transferTableData.updateProgressBar(val, id);
 	}
+	
+	class RemoveFileListener implements ActionListener {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			int index = filesList.getSelectedIndex();
+            filesModel.remove(index);
+            
+            int size = filesModel.getSize();
+            if (size == 0) { //Nobody's left, disable firing.
+                removeFileButton.setEnabled(false);
+            } else { //Select an index.
+            	if (index == filesModel.getSize()) {
+            		//removed item in last position
+            		index--;
+            	}
+                filesList.setSelectedIndex(index);
+                filesList.ensureIndexIsVisible(index);
+            }
+		}
+    };
 }
