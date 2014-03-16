@@ -93,11 +93,19 @@ public class Mediator {
 		gui.addUser(username, files);
 	}
 	
+	public void removeFileFromUser(String fileName) {
+		gui.removeFileFromUser(fileName);
+	}
+	
 	public void addFilesToUsers(String userName, Vector<String> files) {
 		addUser(userName, files);
 	}
 	
 	public HashMap<String, Vector<String>> getUsers() {
 		return users;
+	}
+	
+	public String getUsername() {
+		return currentUser;
 	}
 }

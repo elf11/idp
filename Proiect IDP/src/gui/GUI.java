@@ -2,25 +2,48 @@ package gui;
 
 
 import java.awt.EventQueue;
+import java.awt.Toolkit;
 
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.JFrame;
+import javax.swing.JSeparator;
 import javax.swing.JTable;
 import javax.swing.DefaultListModel;
 import javax.swing.JList;
 import javax.swing.JScrollPane;
+import javax.swing.JTextField;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-
 import java.util.HashMap;
 import java.util.Vector;
 
 import javax.swing.JToolBar;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 
+
+
+
+
+
+
+
+
+
+
 import mediator.Mediator;
+
+import javax.swing.JPanel;
+import javax.swing.JButton;
+import javax.swing.SwingConstants;
 
 public class GUI {
 	
@@ -38,12 +61,21 @@ public class GUI {
 	private DefaultListModel<String> usersModel = new DefaultListModel<String>();
 	private DefaultListModel<String> filesModel = new DefaultListModel<String>();
 	private TableModel transferTableData = new TableModel();
+	private String addFileString = "Add file";
+	private String removeFileString = "Remove file";
+	private String startTranString = "Start Transfer";
+	private JButton addFileButton = new JButton(addFileString);
+	private JButton removeFileButton = new JButton(removeFileString);
+	private JTextField fileNameToAdd;
 	
 	private String selectedUser;
+	private String currentUser;
+	private JPanel buttonPane;
 	
 	public GUI(Mediator mediator) {
 		this.mediator = mediator;
 		this.users = mediator.getUsers();
+		this.currentUser = mediator.getUsername();
 		initialize();
 	}
 	
@@ -128,12 +160,71 @@ public class GUI {
 		JToolBar toolBar = new JToolBar();
 		toolBar.setBounds(0, 0, 1065, 27);
 		frmProiectIdp.getContentPane().add(toolBar);
+	    
+
+	    AddFileListener addFileListener = new AddFileListener(addFileButton);
+		addFileButton.setActionCommand(addFileString);
+		addFileButton.setEnabled(false);
+
+		removeFileButton.setActionCommand(removeFileString);
+        
+        JButton startTranButton = new JButton(startTranString);
+
+        fileNameToAdd = new JTextField(0);
+        fileNameToAdd.addActionListener(addFileListener);
+        fileNameToAdd.getDocument().addDocumentListener(addFileListener);
+
+
+        buttonPane = new JPanel();
+        buttonPane.setLayout(new BoxLayout(buttonPane,
+                                           BoxLayout.LINE_AXIS));
+        buttonPane.add(addFileButton);
+        buttonPane.add(Box.createHorizontalStrut(1));
+        buttonPane.add(new JSeparator(SwingConstants.VERTICAL));
+        buttonPane.add(Box.createHorizontalStrut(1));
+        buttonPane.add(fileNameToAdd);
+        buttonPane.add(removeFileButton);
+        buttonPane.add(startTranButton);
+        buttonPane.setBorder(BorderFactory.createEmptyBorder(1,1,1,1));
 		
+        toolBar.add(buttonPane);
 	}
 	
 	public void addUser(String username, Vector<String> files) {
 		users.put(username, files);
 		usersModel.addElement(username);
+	}
+	
+	public void addFileToUser(String fileName) {
+		
+	}
+	
+	public void removeFileFromUser(String fileName) {
+		ActionListener removeFileListener = new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				int index = filesList.getSelectedIndex();
+	            filesModel.remove(index);
+	            
+	            int size = filesModel.getSize();
+	            if (size == 0) { //Nobody's left, disable firing.
+	                removeFileButton.setEnabled(false);
+	            } else { //Select an index.
+	                if (index == filesModel.getSize()) {
+	                    //removed item in last position
+	                    index--;
+	                }
+
+	                filesList.setSelectedIndex(index);
+	                filesList.ensureIndexIsVisible(index);
+	            }
+			}
+	    };
+	    System.err.println("selected user " + selectedUser);
+		System.err.println("current user " + currentUser);
+		if (selectedUser == currentUser) {
+			removeFileButton.addActionListener(removeFileListener);
+		}
 	}
 	
 
@@ -153,4 +244,79 @@ public class GUI {
 	public void updateProgress(int row, Float i) {
 		transferTableData.updateProgressBar(i, row);	
 	}
+	
+	class AddFileListener implements ActionListener, DocumentListener {
+        private boolean alreadyEnabled = false;
+        private JButton button;
+
+        public AddFileListener(JButton button) {
+            this.button = button;
+        }
+
+        //Required by ActionListener.
+        public void actionPerformed(ActionEvent e) {
+            String name = fileNameToAdd.getText();
+
+            //User didn't type in a unique name...
+            if (name.equals("") || alreadyInList(name)) {
+                Toolkit.getDefaultToolkit().beep();
+                fileNameToAdd.requestFocusInWindow();
+                fileNameToAdd.selectAll();
+                return;
+            }
+
+            int index = filesList.getSelectedIndex(); //get selected index
+            if (index == -1) { //no selection, so insert at beginning
+                index = 0;
+            } else {           //add after the selected item
+                index++;
+            }
+
+            filesModel.insertElementAt(fileNameToAdd.getText(), index);
+            //If we just wanted to add to the end, we'd do this:
+//            filesModel.addElement(fileNameToAdd.getText());
+
+            fileNameToAdd.requestFocusInWindow();
+            fileNameToAdd.setText("");
+
+            filesList.setSelectedIndex(index);
+            filesList.ensureIndexIsVisible(index);
+        }
+
+        protected boolean alreadyInList(String name) {
+            return filesModel.contains(name);
+        }
+
+        @Override
+        public void insertUpdate(DocumentEvent e) {
+            enableButton();
+        }
+
+        @Override
+        public void removeUpdate(DocumentEvent e) {
+            handleEmptyTextField(e);
+        }
+
+        @Override
+        public void changedUpdate(DocumentEvent e) {
+            if (!handleEmptyTextField(e)) {
+                enableButton();
+            }
+        }
+
+        private void enableButton() {
+            if (!alreadyEnabled) {
+                button.setEnabled(true);
+            }
+        }
+
+        private boolean handleEmptyTextField(DocumentEvent e) {
+            if (e.getDocument().getLength() <= 0) {
+                button.setEnabled(false);
+                alreadyEnabled = false;
+                return true;
+            }
+            return false;
+        }
+    }
 }
