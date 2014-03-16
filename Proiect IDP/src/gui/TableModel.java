@@ -81,6 +81,10 @@ class TableModel extends AbstractTableModel {
     	fireTableRowsDeleted(row, row);
     }
     
+    public RowData getById(int id) {
+    	return data.get(idMap.get(id));
+    }
+    
     public boolean isCompleted(int row) {
     	return (float)data.get(row).getCol(RowData.PROGRESS) == 1.0;
     }

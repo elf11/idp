@@ -20,8 +20,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.HashMap;
-import java.util.Vector;
 
 import javax.swing.JToolBar;
 import javax.swing.event.ListSelectionEvent;
@@ -32,6 +30,7 @@ import mediator.Mediator;
 import javax.swing.JPanel;
 import javax.swing.JButton;
 import javax.swing.SwingConstants;
+import javax.swing.JLabel;
 
 public class GUI {
 	
@@ -56,14 +55,14 @@ public class GUI {
 	JButton startTranButton = new JButton(startTranString);
 	private JTextField fileNameToAdd;
 	
-	private String selectedUser;
+	private String selectedUser ="";
 	private StatusBar statusBar;
 	private String currentUser;
 	private JPanel buttonPane;
+	private JLabel nameLabel;
 	
 	public GUI(Mediator mediator) {
 		this.mediator = mediator;
-//		this.users = mediator.getUsers();
 		this.currentUser = mediator.getUsername();
 		initialize();
 	}
@@ -102,11 +101,10 @@ public class GUI {
 					filesModel.clear();
 					for (String file : mediator.getUsers().get(userName))
 						filesModel.addElement(file);
+					
 					if (selectedUser.equals(currentUser)) {
-						removeFileButton.setEnabled(true);
 						addFileButton.setEnabled(true);
 					} else {
-						removeFileButton.setEnabled(false);
 						addFileButton.setEnabled(false);
 					}
 				}
@@ -150,8 +148,11 @@ public class GUI {
 		ListSelectionListener addListSelectionListener = new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent e) {
 				 if (filesList.getSelectedIndex() != -1) {
-					 startTranButton.setEnabled(true);
+					 boolean check = currentUser.equals(selectedUser);
+					 removeFileButton.setEnabled(check);
+					 startTranButton.setEnabled(!check);
 				 } else {
+					 removeFileButton.setEnabled(false);
 					 startTranButton.setEnabled(false);
 				 }
             }
@@ -162,7 +163,7 @@ public class GUI {
 		filesList.addListSelectionListener(addListSelectionListener);
 		
 		frmProiectIdp = new JFrame();
-		frmProiectIdp.setTitle("Proiect IDP");
+		frmProiectIdp.setTitle("NanoShare");
 		frmProiectIdp.setBounds(100, 100, 1280, 720);
 		frmProiectIdp.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frmProiectIdp.getContentPane().setLayout(null);
@@ -175,7 +176,7 @@ public class GUI {
 		table = new JTable(new TableModel());
 		
 		usersPane = new JScrollPane(usersList);
-		usersPane.setBounds(1077, 0, 180, 680);
+		usersPane.setBounds(1077, 0, 180, 656);
 		frmProiectIdp.getContentPane().add(usersPane);
 		
 		
@@ -194,18 +195,18 @@ public class GUI {
 		frmProiectIdp.getContentPane().add(toolBar);
 		
 		statusBar = new StatusBar();
-		statusBar.setBounds(10, 667, 678, 14);
+		statusBar.setBounds(10, 660, 678, 14);
 		frmProiectIdp.getContentPane().add(statusBar);
 
 		fileNameToAdd = new JTextField(10);
 		
 		addFileButton.setEnabled(false);
-		addFileButton.addActionListener(new AddFile(currentUser));
+		addFileButton.addActionListener(new AddFile());
 		addFileButton.setActionCommand(addFileString);
 		
 		
 		removeFileButton.setActionCommand(removeFileString);
-		removeFileButton.addActionListener(new RemoveFileListener(currentUser));
+		removeFileButton.addActionListener(new RemoveFileListener());
 		removeFileButton.setEnabled(false);
 		
 		startTranButton.setEnabled(false);
@@ -224,20 +225,39 @@ public class GUI {
         buttonPane.setBorder(BorderFactory.createEmptyBorder(1,1,1,1));
 		
         toolBar.add(buttonPane);
+        
+        nameLabel = new JLabel("Logged in as " + currentUser);
+        nameLabel.setBounds(1077, 660, 180, 14);
+        frmProiectIdp.getContentPane().add(nameLabel);
 	}
 	
-	public void addUser(String username, Vector<String> files) {
-		mediator.getUsers().put(username, files);
+	public void addUser(String username) {
 		usersModel.addElement(username);
 		statusBar.setText(username + " has logged in.");
 	}
 	
-	public void addFileToUser(String username, String fileName) {
-		addFileButton.addActionListener(new AddFile(username));
+	public void addFileToUser(String user, String fileName) {
+		if (user.equals(selectedUser)) {
+			filesModel.addElement(fileName);
+			statusBar.setText(user + " has shared file " + fileName + ".");
+		}
 	}
 	
-	public void removeFileFromUser(String username, String fileName) {
-		removeFileButton.addActionListener(new RemoveFileListener(username));
+	public void removeFileFromUser(String user, String fileName) {
+		int index = filesList.getSelectedIndex();
+        filesModel.remove(filesList.getSelectedIndex());
+        statusBar.setText(user + " has stopped sharing file " + fileName + ".");
+        
+        if (filesModel.isEmpty()) {
+            removeFileButton.setEnabled(false);
+        } else { //Select an index.
+        	if (index == filesModel.getSize()) {
+        		//removed item in last position
+        		index--;
+        	}
+            filesList.setSelectedIndex(index);
+            filesList.ensureIndexIsVisible(index);
+        }
 	}
 	
 	private boolean transferExists(String user, String file) {
@@ -271,14 +291,14 @@ public class GUI {
 	}
 
 	public void updateProgress(int id, Float val) {
+		if (val == 1) {
+			RowData transfer = transferTableData.getById(id);
+			statusBar.setText("Transfer of file \"" + transfer.getCol(RowData.NAME) + "\" is complete.");
+		}
 		transferTableData.updateProgressBar(val, id);
 	}
 	
 	class AddFile implements ActionListener {
-		private String username;
-		public AddFile(String uName) {
-			this.username = uName;
-		}
 		
 		@Override
 		public void actionPerformed(ActionEvent e) {
@@ -297,38 +317,15 @@ public class GUI {
 						null, "Name is duplicated!", "Error", JOptionPane.ERROR_MESSAGE);
 				return;
 			}
-			mediator.addToUsers(username, text);
-			filesModel.addElement(text);
+			mediator.addFileToUser(selectedUser, text);
 		}
 	};
 	
 	class RemoveFileListener implements ActionListener {
 		
-		private String username;
-		
-		public RemoveFileListener(String uName) {
-			// TODO Auto-generated constructor stub
-			this.username = uName;
-		}
-		
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			int index = filesList.getSelectedIndex();
-            filesModel.remove(index);
-            mediator.removeFromUsers(username, index);
-            mediator.removeFileFromUser(this.username, filesList.getSelectedValue());
-            
-            int size = filesModel.getSize();
-            if (size == 0) { //Nobody's left, disable firing.
-                removeFileButton.setEnabled(false);
-            } else { //Select an index.
-            	if (index == filesModel.getSize()) {
-            		//removed item in last position
-            		index--;
-            	}
-                filesList.setSelectedIndex(index);
-                filesList.ensureIndexIsVisible(index);
-            }
+			mediator.removeFileFromUser(selectedUser, filesList.getSelectedValue());
 		}
     };
 }

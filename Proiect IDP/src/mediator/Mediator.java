@@ -75,36 +75,31 @@ public class Mediator {
 		network.startOutgoingTransfer(tr);
 	}
 
-	public void updateTransfer(int id, Float i) {
-		gui.updateProgress(id, i);
+	public void updateTransfer(int id, Float progress) {
+		gui.updateProgress(id, progress);
 	}
 	
 	public void addUser(String username, Vector<String> files) {
-		gui.addUser(username, files);
+		users.put(username, files);
+		gui.addUser(username);
 	}
 	
 	public void removeFileFromUser(String username, String fileName) {
+		users.get(username).removeElement(fileName);
 		gui.removeFileFromUser(username, fileName);
 	}
 	
 	public void addFileToUser(String username, String fileName) {
+		users.get(username).add(fileName);
 		gui.addFileToUser(username, fileName);
 	}
 	
-	public void addFilesToUsers(String userName, Vector<String> files) {
+	public void addFilesToUser(String userName, Vector<String> files) {
 		addUser(userName, files);
 	}
 	
 	public HashMap<String, Vector<String>> getUsers() {
 		return users;
-	}
-	
-	public void addToUsers(String username, String filename) {
-		users.get(username).add(filename);
-	}
-	
-	public void removeFromUsers(String username, int index) {
-		users.get(username).remove(index);
 	}
 	
 	public String getUsername() {
