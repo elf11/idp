@@ -83,8 +83,12 @@ public class Mediator {
 		gui.addUser(username, files);
 	}
 	
-	public void removeFileFromUser(String fileName) {
-		gui.removeFileFromUser(fileName);
+	public void removeFileFromUser(String username, String fileName) {
+		gui.removeFileFromUser(username, fileName);
+	}
+	
+	public void addFileToUser(String username, String fileName) {
+		gui.addFileToUser(username, fileName);
 	}
 	
 	public void addFilesToUsers(String userName, Vector<String> files) {

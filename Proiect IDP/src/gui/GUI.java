@@ -54,6 +54,7 @@ public class GUI {
 	private String startTranString = "Start Transfer";
 	private JButton addFileButton = new JButton(addFileString);
 	private JButton removeFileButton = new JButton(removeFileString);
+	JButton startTranButton = new JButton(startTranString);
 	private JTextField fileNameToAdd;
 	
 	private String selectedUser;
@@ -104,9 +105,10 @@ public class GUI {
 						filesModel.addElement(file);
 					if (selectedUser.equals(currentUser)) {
 						removeFileButton.setEnabled(true);
-						removeFileButton.setEnabled(true);
+						addFileButton.setEnabled(true);
 					} else {
 						removeFileButton.setEnabled(false);
+						addFileButton.setEnabled(false);
 					}
 				}
 			}
@@ -132,36 +134,33 @@ public class GUI {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				String fileName = (String)filesList.getSelectedValue();
+				
+				if (filesList.getSelectedIndex() != -1) {
+					startTranButton.setEnabled(true);
+				} else {
+					startTranButton.setEnabled(false);
+				}
+				
 				if (!transferExists(selectedUser, fileName)) {
 					mediator.newOutgoingTransfer(selectedUser, fileName);
 				}
 			}
 		};
 		
-		ActionListener addFile = new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				String text = "";
-				text = fileNameToAdd.getText();
-				
-				if (text.isEmpty()) {
-					JOptionPane.showMessageDialog(
-							null, "Name is empty!", "Error", JOptionPane.ERROR_MESSAGE);
-					return;
-				}
-				
-				if (filesModel.contains(text)) {
-					JOptionPane.showMessageDialog(
-							null, "Name is duplicated!", "Error", JOptionPane.ERROR_MESSAGE);
-					return;
-				}
-				
-				filesModel.addElement(text);
-			}
-		};
+		
+		ListSelectionListener addListSelectionListener = new ListSelectionListener() {
+            public void valueChanged(ListSelectionEvent e) {
+				 if (filesList.getSelectedIndex() != -1) {
+					 startTranButton.setEnabled(true);
+				 } else {
+					 startTranButton.setEnabled(false);
+				 }
+            }
+        };
 		
 		usersList.addListSelectionListener(userListSelectionListener);
 		filesList.addMouseListener(mouseFileListener);
+		filesList.addListSelectionListener(addListSelectionListener);
 		
 		frmProiectIdp = new JFrame();
 		frmProiectIdp.setTitle("Proiect IDP");
@@ -201,16 +200,17 @@ public class GUI {
 
 		fileNameToAdd = new JTextField(10);
 		
-		addFileButton.addActionListener(addFile);
+		addFileButton.setEnabled(false);
+		addFileButton.addActionListener(new AddFile());
 		addFileButton.setActionCommand(addFileString);
-
+		
+		
 		removeFileButton.setActionCommand(removeFileString);
-		removeFileButton.addActionListener(new RemoveFileListener());
+		removeFileButton.addActionListener(new RemoveFileListener(currentUser));
 		removeFileButton.setEnabled(false);
 		
-        JButton startTranButton = new JButton(startTranString);
+		startTranButton.setEnabled(false);
         startTranButton.addActionListener(startAction);
-
 
         buttonPane = new JPanel();
         buttonPane.setLayout(new BoxLayout(buttonPane,
@@ -233,14 +233,12 @@ public class GUI {
 		statusBar.setText(username + " has logged in.");
 	}
 	
-	public void addFileToUser(String fileName) {
-		
+	public void addFileToUser(String username, String fileName) {
+		addFileButton.addActionListener(new AddFile());
 	}
 	
-	public void removeFileFromUser(String fileName) {
-		if (selectedUser == currentUser) {
-			removeFileButton.addActionListener(new RemoveFileListener());
-		}
+	public void removeFileFromUser(String username, String fileName) {
+		removeFileButton.addActionListener(new RemoveFileListener(username));
 	}
 	
 	private boolean transferExists(String user, String file) {
@@ -277,11 +275,46 @@ public class GUI {
 		transferTableData.updateProgressBar(val, id);
 	}
 	
+	class AddFile implements ActionListener {
+		public AddFile() {
+		}
+		
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			String text = "";
+			text = fileNameToAdd.getText();
+			fileNameToAdd.setText("");
+			
+			if (text.isEmpty()) {
+				JOptionPane.showMessageDialog(
+						null, "Name is empty!", "Error", JOptionPane.ERROR_MESSAGE);
+				return;
+			}
+			
+			if (filesModel.contains(text)) {
+				JOptionPane.showMessageDialog(
+						null, "Name is duplicated!", "Error", JOptionPane.ERROR_MESSAGE);
+				return;
+			}
+			
+			filesModel.addElement(text);
+		}
+	};
+	
 	class RemoveFileListener implements ActionListener {
+		
+		private String username;
+		
+		public RemoveFileListener(String uName) {
+			// TODO Auto-generated constructor stub
+			this.username = uName;
+		}
+		
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			int index = filesList.getSelectedIndex();
             filesModel.remove(index);
+            mediator.removeFileFromUser(this.username, filesList.getSelectedValue());
             
             int size = filesModel.getSize();
             if (size == 0) { //Nobody's left, disable firing.
