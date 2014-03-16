@@ -39,6 +39,9 @@ import javax.swing.event.ListSelectionListener;
 
 
 
+
+
+
 import mediator.Mediator;
 
 import javax.swing.JPanel;
@@ -127,6 +130,14 @@ public class GUI {
 			 }
 		};
 		
+		ActionListener startAction = new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				String fileName = (String)filesList.getSelectedValue();
+				mediator.newOutgoingTransfer(selectedUser, fileName);
+			}
+		};
+		
 		usersList.addListSelectionListener(userListSelectionListener);
 		filesList.addMouseListener(mouseFileListener);
 		
@@ -160,17 +171,20 @@ public class GUI {
 		JToolBar toolBar = new JToolBar();
 		toolBar.setBounds(0, 0, 1065, 27);
 		frmProiectIdp.getContentPane().add(toolBar);
-	    
-
+		
 	    AddFileListener addFileListener = new AddFileListener(addFileButton);
 		addFileButton.setActionCommand(addFileString);
 		addFileButton.setEnabled(false);
 
 		removeFileButton.setActionCommand(removeFileString);
-        
+//		if (selectedUser.equals(currentUser)) {
+			removeFileButton.addActionListener(new RemoveFileListener());
+//		}
+		
         JButton startTranButton = new JButton(startTranString);
+        startTranButton.addActionListener(startAction);
 
-        fileNameToAdd = new JTextField(0);
+        fileNameToAdd = new JTextField(10);
         fileNameToAdd.addActionListener(addFileListener);
         fileNameToAdd.getDocument().addDocumentListener(addFileListener);
 
@@ -200,30 +214,8 @@ public class GUI {
 	}
 	
 	public void removeFileFromUser(String fileName) {
-		ActionListener removeFileListener = new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				int index = filesList.getSelectedIndex();
-	            filesModel.remove(index);
-	            
-	            int size = filesModel.getSize();
-	            if (size == 0) { //Nobody's left, disable firing.
-	                removeFileButton.setEnabled(false);
-	            } else { //Select an index.
-	                if (index == filesModel.getSize()) {
-	                    //removed item in last position
-	                    index--;
-	                }
-
-	                filesList.setSelectedIndex(index);
-	                filesList.ensureIndexIsVisible(index);
-	            }
-			}
-	    };
-	    System.err.println("selected user " + selectedUser);
-		System.err.println("current user " + currentUser);
 		if (selectedUser == currentUser) {
-			removeFileButton.addActionListener(removeFileListener);
+			removeFileButton.addActionListener(new RemoveFileListener());
 		}
 	}
 	
@@ -244,6 +236,27 @@ public class GUI {
 	public void updateProgress(int row, Float i) {
 		transferTableData.updateProgressBar(i, row);	
 	}
+	
+	class RemoveFileListener implements ActionListener {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			int index = filesList.getSelectedIndex();
+            filesModel.remove(index);
+            
+            int size = filesModel.getSize();
+            if (size == 0) { //Nobody's left, disable firing.
+                removeFileButton.setEnabled(false);
+            } else { //Select an index.
+                if (index == filesModel.getSize()) {
+                    //removed item in last position
+                    index--;
+                }
+
+                filesList.setSelectedIndex(index);
+                filesList.ensureIndexIsVisible(index);
+            }
+		}
+    };
 	
 	class AddFileListener implements ActionListener, DocumentListener {
         private boolean alreadyEnabled = false;
