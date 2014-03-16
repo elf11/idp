@@ -11,13 +11,13 @@ import javax.swing.JScrollPane;
 
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-
 import java.util.HashMap;
 import java.util.Vector;
 
 import javax.swing.JToolBar;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+
 
 
 import mediator.Mediator;
@@ -40,6 +40,7 @@ public class GUI {
 	private TableModel transferTableData = new TableModel();
 	
 	private String selectedUser;
+	private StatusBar statusBar;
 	
 	public GUI(Mediator mediator) {
 		this.mediator = mediator;
@@ -90,7 +91,18 @@ public class GUI {
 			 public void mouseClicked(MouseEvent evt) {
 				 if (evt.getClickCount() == 2) {
 					 String fileName = (String)filesList.getSelectedValue();
-					 mediator.newOutgoingTransfer(selectedUser, fileName);
+					for (int i = 0; i < table.getRowCount(); i++) {
+						if (transferTableData.getValueAt(i, RowData.SOURCE).equals(selectedUser) && 
+								transferTableData.getValueAt(i, RowData.NAME).equals(fileName)) {
+							if (transferTableData.getValueAt(i, RowData.STATUS) != Status.Completed) {
+								return;
+							} else {
+								transferTableData.removeRow(i);
+								continue;
+							}
+						}
+					}
+					mediator.newOutgoingTransfer(selectedUser, fileName);
 				 }
 			 }
 		};
@@ -106,7 +118,7 @@ public class GUI {
 		
 		
 		filesPane = new JScrollPane(filesList);
-		filesPane.setBounds(0, 33, 1065, 404);
+		filesPane.setBounds(0, 33, 1065, 350);
 		frmProiectIdp.getContentPane().add(filesPane);
 		
 		table = new JTable(new TableModel());
@@ -120,20 +132,25 @@ public class GUI {
 		table.setBounds(10, 449, 1055, 221);
 		table.setFillsViewportHeight(true);
 		table.getColumnModel().getColumn(RowData.PROGRESS).setCellRenderer(new ProgressCellRender());
+		table.addMouseListener(new TableMenu(table));
 		
 		scrollPane = new JScrollPane(table);
-		scrollPane.setBounds(0, 449, 1065, 232);
+		scrollPane.setBounds(0, 394, 1065, 262);
 		frmProiectIdp.getContentPane().add(scrollPane);
 		
 		JToolBar toolBar = new JToolBar();
 		toolBar.setBounds(0, 0, 1065, 27);
 		frmProiectIdp.getContentPane().add(toolBar);
 		
+		statusBar = new StatusBar();
+		statusBar.setBounds(10, 667, 678, 14);
+		frmProiectIdp.getContentPane().add(statusBar);
 	}
 	
 	public void addUser(String username, Vector<String> files) {
 		users.put(username, files);
 		usersModel.addElement(username);
+		statusBar.setText(username + " has logged in.");
 	}
 	
 
@@ -141,16 +158,18 @@ public class GUI {
 		Status status;
 		if (sending) {
 			status = Status.Sending;
+			statusBar.setText("Sending file \"" + fileName + "\" to " + dest + ".");
 		} else {
 			status = Status.Receiving;
+			statusBar.setText("Receiving file \"" + fileName + "\" from " + source + ".");
 		}
 		
 		RowData newRow = new RowData(source, dest, fileName, 0f, status);
 		transferTableData.addRow(newRow);
-		return transferTableData.getRowCount() - 1;
+		return newRow.getId();
 	}
 
-	public void updateProgress(int row, Float i) {
-		transferTableData.updateProgressBar(i, row);	
+	public void updateProgress(int id, Float val) {
+		transferTableData.updateProgressBar(val, id);
 	}
 }

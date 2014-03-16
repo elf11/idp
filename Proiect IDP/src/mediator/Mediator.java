@@ -1,7 +1,6 @@
 package mediator;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Vector;
 
 import network.Network;
@@ -12,9 +11,7 @@ public class Mediator {
 	private GUI gui;
 	private Network network;
 	private String currentUser;
-	
-	HashSet<TransferInfo> incomingFiles = new HashSet<TransferInfo>();
-	HashSet<TransferInfo> outgoingFiles = new HashSet<TransferInfo>();	
+
 	HashMap<String, Vector<String>> users = new HashMap<String, Vector<String>>();
 
 	/**
@@ -25,9 +22,9 @@ public class Mediator {
 		Mediator core = new Mediator();
 		addFiles(core);
 		Thread.sleep(1000);
-		core.newIncomingTransfer("Andrei", "file1");
+		core.newIncomingTransfer("andrei", "file1");
 		Thread.sleep(1000);
-		core.newOutgoingTransfer("Oana", "file2");
+		core.newOutgoingTransfer("oana", "file2");
 	}
 	
 	public static void addFiles(Mediator core) {
@@ -63,7 +60,6 @@ public class Mediator {
 		int size = 500;
 		int id = gui.addTransfer(currentUser, dest, fileName, true);
 		TransferInfo tr = new TransferInfo(dest, fileName, id, 0, size, this);
-		incomingFiles.add(tr);
 		network.startIncomingTransfer(tr);
 	}
 	
@@ -71,7 +67,6 @@ public class Mediator {
 		int size = 500;
 		int id = gui.addTransfer(source, currentUser, fileName, false);
 		TransferInfo tr = new TransferInfo(source, fileName, id, 1, size, this);
-		outgoingFiles.add(tr);
 		network.startOutgoingTransfer(tr);
 	}
 
