@@ -41,7 +41,6 @@ public class GUI {
 
 	private JTable table;
 	private JScrollPane scrollPane;
-	private HashMap<String, Vector<String>> users;
 	private JScrollPane usersPane;
 	private JScrollPane filesPane;
 	private JList<String> usersList;
@@ -64,7 +63,7 @@ public class GUI {
 	
 	public GUI(Mediator mediator) {
 		this.mediator = mediator;
-		this.users = mediator.getUsers();
+//		this.users = mediator.getUsers();
 		this.currentUser = mediator.getUsername();
 		initialize();
 	}
@@ -101,7 +100,7 @@ public class GUI {
 				if (userName != null) {
 					selectedUser = userName;
 					filesModel.clear();
-					for (String file : users.get(userName))
+					for (String file : mediator.getUsers().get(userName))
 						filesModel.addElement(file);
 					if (selectedUser.equals(currentUser)) {
 						removeFileButton.setEnabled(true);
@@ -201,7 +200,7 @@ public class GUI {
 		fileNameToAdd = new JTextField(10);
 		
 		addFileButton.setEnabled(false);
-		addFileButton.addActionListener(new AddFile());
+		addFileButton.addActionListener(new AddFile(currentUser));
 		addFileButton.setActionCommand(addFileString);
 		
 		
@@ -228,13 +227,13 @@ public class GUI {
 	}
 	
 	public void addUser(String username, Vector<String> files) {
-		users.put(username, files);
+		mediator.getUsers().put(username, files);
 		usersModel.addElement(username);
 		statusBar.setText(username + " has logged in.");
 	}
 	
 	public void addFileToUser(String username, String fileName) {
-		addFileButton.addActionListener(new AddFile());
+		addFileButton.addActionListener(new AddFile(username));
 	}
 	
 	public void removeFileFromUser(String username, String fileName) {
@@ -276,7 +275,9 @@ public class GUI {
 	}
 	
 	class AddFile implements ActionListener {
-		public AddFile() {
+		private String username;
+		public AddFile(String uName) {
+			this.username = uName;
 		}
 		
 		@Override
@@ -296,7 +297,7 @@ public class GUI {
 						null, "Name is duplicated!", "Error", JOptionPane.ERROR_MESSAGE);
 				return;
 			}
-			
+			mediator.addToUsers(username, text);
 			filesModel.addElement(text);
 		}
 	};
@@ -314,6 +315,7 @@ public class GUI {
 		public void actionPerformed(ActionEvent e) {
 			int index = filesList.getSelectedIndex();
             filesModel.remove(index);
+            mediator.removeFromUsers(username, index);
             mediator.removeFileFromUser(this.username, filesList.getSelectedValue());
             
             int size = filesModel.getSize();

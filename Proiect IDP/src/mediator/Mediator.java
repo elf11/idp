@@ -99,6 +99,14 @@ public class Mediator {
 		return users;
 	}
 	
+	public void addToUsers(String username, String filename) {
+		users.get(username).add(filename);
+	}
+	
+	public void removeFromUsers(String username, int index) {
+		users.get(username).remove(index);
+	}
+	
 	public String getUsername() {
 		return currentUser;
 	}
