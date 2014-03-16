@@ -8,6 +8,7 @@ import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.JSeparator;
 import javax.swing.JTable;
 import javax.swing.DefaultListModel;
@@ -27,6 +28,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+
 
 
 
@@ -138,6 +140,28 @@ public class GUI {
 			}
 		};
 		
+		ActionListener addFile = new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				String text = "";
+				text = fileNameToAdd.getText();
+				
+				if (text.isEmpty()) {
+					JOptionPane.showMessageDialog(
+							null, "Name is empty!", "Error", JOptionPane.ERROR_MESSAGE);
+					return;
+				}
+				
+				if (filesModel.contains(text)) {
+					JOptionPane.showMessageDialog(
+							null, "Name is duplicated!", "Error", JOptionPane.ERROR_MESSAGE);
+					return;
+				}
+				
+				filesModel.addElement(text);
+			}
+		};
+		
 		usersList.addListSelectionListener(userListSelectionListener);
 		filesList.addMouseListener(mouseFileListener);
 		
@@ -172,9 +196,10 @@ public class GUI {
 		toolBar.setBounds(0, 0, 1065, 27);
 		frmProiectIdp.getContentPane().add(toolBar);
 		
-	    AddFileListener addFileListener = new AddFileListener(addFileButton);
+		fileNameToAdd = new JTextField(10);
+		
+		addFileButton.addActionListener(addFile);
 		addFileButton.setActionCommand(addFileString);
-		addFileButton.setEnabled(false);
 
 		removeFileButton.setActionCommand(removeFileString);
 //		if (selectedUser.equals(currentUser)) {
@@ -183,10 +208,6 @@ public class GUI {
 		
         JButton startTranButton = new JButton(startTranString);
         startTranButton.addActionListener(startAction);
-
-        fileNameToAdd = new JTextField(10);
-        fileNameToAdd.addActionListener(addFileListener);
-        fileNameToAdd.getDocument().addDocumentListener(addFileListener);
 
 
         buttonPane = new JPanel();
@@ -258,78 +279,4 @@ public class GUI {
 		}
     };
 	
-	class AddFileListener implements ActionListener, DocumentListener {
-        private boolean alreadyEnabled = false;
-        private JButton button;
-
-        public AddFileListener(JButton button) {
-            this.button = button;
-        }
-
-        //Required by ActionListener.
-        public void actionPerformed(ActionEvent e) {
-            String name = fileNameToAdd.getText();
-
-            //User didn't type in a unique name...
-            if (name.equals("") || alreadyInList(name)) {
-                Toolkit.getDefaultToolkit().beep();
-                fileNameToAdd.requestFocusInWindow();
-                fileNameToAdd.selectAll();
-                return;
-            }
-
-            int index = filesList.getSelectedIndex(); //get selected index
-            if (index == -1) { //no selection, so insert at beginning
-                index = 0;
-            } else {           //add after the selected item
-                index++;
-            }
-
-            filesModel.insertElementAt(fileNameToAdd.getText(), index);
-            //If we just wanted to add to the end, we'd do this:
-//            filesModel.addElement(fileNameToAdd.getText());
-
-            fileNameToAdd.requestFocusInWindow();
-            fileNameToAdd.setText("");
-
-            filesList.setSelectedIndex(index);
-            filesList.ensureIndexIsVisible(index);
-        }
-
-        protected boolean alreadyInList(String name) {
-            return filesModel.contains(name);
-        }
-
-        @Override
-        public void insertUpdate(DocumentEvent e) {
-            enableButton();
-        }
-
-        @Override
-        public void removeUpdate(DocumentEvent e) {
-            handleEmptyTextField(e);
-        }
-
-        @Override
-        public void changedUpdate(DocumentEvent e) {
-            if (!handleEmptyTextField(e)) {
-                enableButton();
-            }
-        }
-
-        private void enableButton() {
-            if (!alreadyEnabled) {
-                button.setEnabled(true);
-            }
-        }
-
-        private boolean handleEmptyTextField(DocumentEvent e) {
-            if (e.getDocument().getLength() <= 0) {
-                button.setEnabled(false);
-                alreadyEnabled = false;
-                return true;
-            }
-            return false;
-        }
-    }
 }
