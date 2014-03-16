@@ -22,7 +22,12 @@ public class Mediator {
 	 * @throws InterruptedException 
 	 */
 	public static void main(String[] args) throws InterruptedException {
-		Mediator core = new Mediator();
+		if (args.length != 1) {
+			System.err.println("Introduceti username-ul pentru autentificare!");
+			System.exit(-1);
+		}
+		System.err.println(args[0]);
+		Mediator core = new Mediator(args[0]);
 		addFiles(core);
 		Thread.sleep(1000);
 		core.newIncomingTransfer("Andrei", "file1");
@@ -51,8 +56,8 @@ public class Mediator {
 		core.addUser("andrei", files3);
 	}
 	
-	Mediator() {
-		currentUser = "_me_";
+	Mediator(String username) {
+		currentUser = username;
 		gui = new GUI(this);
 		network = new Network(this);
 		gui.start();
