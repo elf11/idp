@@ -3,6 +3,9 @@ package network;
 import mediator.Mediator;
 import mediator.TransferInfo;
 
+/**
+ * Class for implementing the  Network Component
+ */
 public class Network {
 
 	final Mediator mediator;

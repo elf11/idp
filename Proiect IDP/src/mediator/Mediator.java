@@ -1,18 +1,23 @@
 package mediator;
 
+import java.awt.EventQueue;
 import java.util.HashMap;
 import java.util.Vector;
 
 import network.Network;
 import gui.*;
 
+/**
+ * Mediator class. Holds information about all components and facilitates interaction
+ * between them.
+ */
 public class Mediator {
 
 	private GUI gui;
 	private Network network;
 	private String currentUser;
 
-	HashMap<String, Vector<String>> users = new HashMap<String, Vector<String>>();
+	private HashMap<String, Vector<String>> users = new HashMap<String, Vector<String>>();
 
 	/**
 	 * Launch the application.
@@ -23,34 +28,15 @@ public class Mediator {
 			System.err.println("Introduceti username-ul pentru autentificare!");
 			System.exit(-1);
 		}
-		System.err.println(args[0]);
 		Mediator core = new Mediator(args[0]);
-		addFiles(core);
-		Thread.sleep(1000);
-		core.newIncomingTransfer("andrei", "file1");
-		Thread.sleep(1000);
-		core.newOutgoingTransfer("oana", "file2");
-	}
-	
-	public static void addFiles(Mediator core) {
-		Vector<String> files1 = new Vector<String>();
-		files1.add("movie.mp4");
-		files1.add("so.pdf");
-		files1.add("idp.pdf");
 		
-		Vector<String> files2 = new Vector<String>();
-		files2.add("movie1.mp4");
-		files2.add("so1.pdf");
-		files2.add("idp1.pdf");
+		Vector<String> files = new Vector<String>();
+		files.add("movie.mp4");
+		files.add("so.pdf");
+		files.add("idp.pdf");
+		core.addUser(core.getUserName(), files);
 		
-		Vector<String> files3 = new Vector<String>();
-		files3.add("movie2.mp4");
-		files3.add("so2.pdf");
-		files3.add("idp2.pdf");
-		
-		core.addUser("mihai", files1);
-		core.addUser("oana", files2);
-		core.addUser("andrei", files3);
+		new Mock(core).run();
 	}
 	
 	Mediator(String username) {
@@ -60,7 +46,9 @@ public class Mediator {
 		gui.start();
 	}
 	
-	
+	/**
+	 * Called by the network to signal that a file is requested by some user
+	 */
 	public void newIncomingTransfer(String dest, String fileName) {
 		int size = 500;
 		int id = gui.addTransfer(currentUser, dest, fileName, true);
@@ -68,41 +56,74 @@ public class Mediator {
 		network.startIncomingTransfer(tr);
 	}
 	
+	/**
+	 * Called by the GUI to request starting the transfer of a file
+	 */
 	public void newOutgoingTransfer(String source, String fileName) {
 		int size = 500;
 		int id = gui.addTransfer(source, currentUser, fileName, false);
 		TransferInfo tr = new TransferInfo(source, fileName, id, 1, size, this);
 		network.startOutgoingTransfer(tr);
 	}
-
-	public void updateTransfer(int id, Float progress) {
-		gui.updateProgress(id, progress);
+	
+	/**
+	 * Add a user to the list of usersr
+	 */
+	public synchronized void addUser(final String userName, Vector<String> files) {
+		users.put(userName, files);
+		EventQueue.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				gui.addUser(userName);
+			}
+		});
 	}
 	
-	public void addUser(String username, Vector<String> files) {
-		users.put(username, files);
-		gui.addUser(username);
+	/**
+	 * Removes a file shared by a user
+	 */
+	public synchronized void removeFileFromUser(final String userName, final String fileName) {
+		users.get(userName).removeElement(fileName);
+		EventQueue.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				gui.removeFileFromUser(userName, fileName);
+			}
+		});
 	}
 	
-	public void removeFileFromUser(String username, String fileName) {
-		users.get(username).removeElement(fileName);
-		gui.removeFileFromUser(username, fileName);
-	}
-	
-	public void addFileToUser(String username, String fileName) {
-		users.get(username).add(fileName);
-		gui.addFileToUser(username, fileName);
-	}
-	
-	public void addFilesToUser(String userName, Vector<String> files) {
-		addUser(userName, files);
+	/**
+	 * Add a file to be shared by a user
+	 */
+	public synchronized void addFileToUser(String userName, String fileName) {
+		users.get(userName).add(fileName);
+		gui.addFileToUser(userName, fileName);
 	}
 	
 	public HashMap<String, Vector<String>> getUsers() {
 		return users;
 	}
 	
-	public String getUsername() {
+	public String getUserName() {
 		return currentUser;
+	}
+
+	public synchronized void removeUser(final String userName) {
+		if (users.remove(userName) != null) {
+			EventQueue.invokeLater(new Runnable() {
+				@Override
+				public void run() {
+					gui.removeUser(userName);
+				}	
+			});
+		}
+	}
+	
+	/**
+	 * Updates progress and speed of transfer. Called by the publish method of a Swing Worker
+	 * transfering a file
+	 */
+	public void updateTransfer(int id, Float progress, int speed) {
+		gui.updateProgress(id, progress, speed);
 	}
 }

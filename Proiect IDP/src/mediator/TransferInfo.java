@@ -1,5 +1,10 @@
 package mediator;
 
+/**
+ * Class that stores general information about a transfer that is in progress
+ * @author Andrei
+ *
+ */
 public class TransferInfo {
 	
 	private String fileName;
@@ -42,11 +47,11 @@ public class TransferInfo {
 		return new Float((float)transferedSize / totalSize);
 	}
 
-	public void update(int size) {
+	public void update(int size, int speed) {
 		transferedSize += size;
 		if (transferedSize > totalSize) {
 			transferedSize = totalSize;
 		}
-		mediator.updateTransfer(id, getProgress());
+		mediator.updateTransfer(id, getProgress(), speed);
 	}
 }

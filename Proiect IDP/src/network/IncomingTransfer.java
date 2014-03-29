@@ -2,6 +2,10 @@ package network;
 
 import mediator.TransferInfo;
 
+/**
+ * Class that implements receiving a file
+ *
+ */
 public class IncomingTransfer extends Transfer {
 
 	public IncomingTransfer(TransferInfo info) {
@@ -9,10 +13,10 @@ public class IncomingTransfer extends Transfer {
 	}
 
 	@Override
-	protected Object doInBackground() throws Exception {
+	protected Integer doInBackground() throws Exception {
 		while (!info.isDone()) {
 			Thread.sleep(250);
-			info.update(25);
+			publish(25);
 		}
 		return null;
 	}

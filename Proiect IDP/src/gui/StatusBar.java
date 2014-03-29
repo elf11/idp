@@ -3,11 +3,12 @@ package gui;
 import javax.swing.JLabel;
 import javax.swing.SwingWorker;
 
+/**
+ * Class used for representing the status bar
+ *
+ */
 public class StatusBar extends JLabel {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
 	
 	/* set text and delete it after a certain period */

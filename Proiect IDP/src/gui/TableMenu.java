@@ -9,6 +9,9 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JTable;
 
+/**
+ * Class that implements a menu for operations on ongoing transfer
+ */
 public class TableMenu extends MouseAdapter {
 
 	private JTable table;

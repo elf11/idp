@@ -6,14 +6,17 @@ import java.util.Map.Entry;
 
 import javax.swing.table.AbstractTableModel;
 
+/**
+ * This class implements a Table Model for the table containing data about ongoing transfers.
+ */
 class TableModel extends AbstractTableModel {
 	
 	private static final long serialVersionUID = 2L;
 	
-    private final String[] columnNames = {"Source", "Destination", "File Name", "Progress", "Status"};
+    private final String[] columnNames = {"Source", "Destination", "File Name", "Speed", "Progress", "Status"};
     private ArrayList<RowData> data = new ArrayList<RowData>();
     
-    /* stores the row of each RowData. A RowData element is identified by its ID */
+    /* Stores the row of each RowData. A RowData element is identified by its ID */
     private HashMap<Integer, Integer> idMap = new HashMap<Integer, Integer>();
 
     public int getColumnCount() {
@@ -32,15 +35,28 @@ class TableModel extends AbstractTableModel {
         return data.get(row).getCol(col);
     }
 
-    /*
-     * Don't need to implement this method unless your table's
-     * editable.
-     */
     public boolean isCellEditable(int row, int col) {
        return false;
     }
     
-    public void updateProgressBar(Float value, int id) {
+    /**
+     * Formats a given speed in bytes/s to an appropriate format
+     */
+    public String formatSpeed(int speed) {
+    	
+    	if (speed < 1024) {
+    		return speed + " B/s";
+    	} else if (speed > 1024 && speed < 1048576) {
+    		return String.format("%.3g%n", (double)speed / 1024) + " KB/s";
+    	} else {
+    		return String.format("%.3g%n", (double)speed / 1048576) + " MB/s";
+    	}	
+    }
+    
+    /**
+     * Updates the progress bar and the speed
+     */
+    public void updateProgress(Float value, int id, int speed) {
     	int row;
     	if (idMap.containsKey(id)) {
     		row = idMap.get(id);
@@ -49,13 +65,16 @@ class TableModel extends AbstractTableModel {
     		return;
     	}
     	data.get(row).set(RowData.PROGRESS, value);
+    	data.get(row).set(RowData.SPEED, formatSpeed(speed));
     	
     	/* If the transfer is complete, change its status */
     	if ((float)data.get(row).getCol(RowData.PROGRESS) == 1.0) {
     		data.get(row).set(RowData.STATUS, Status.Completed);
+    		data.get(row).set(RowData.SPEED, "");
     		fireTableCellUpdated(row, RowData.STATUS);
     	}
     		
+		fireTableCellUpdated(row, RowData.SPEED);
     	fireTableCellUpdated(row, RowData.PROGRESS);
     }
     
@@ -65,6 +84,9 @@ class TableModel extends AbstractTableModel {
     	fireTableRowsInserted(data.size() - 1, data.size() - 1);
     }
     
+    /**
+     * Removes a completed row selected by the user
+     */
     public void removeRow(int row) {
     	int id = -1;
     	/* decrease the row of all entries after the current one from map */
