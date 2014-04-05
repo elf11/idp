@@ -1,9 +1,12 @@
 package mediator;
 
 import java.awt.EventQueue;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Vector;
 
+import webService.User;
+import webService.WebService;
 import network.Network;
 import gui.*;
 
@@ -15,32 +18,38 @@ public class Mediator {
 
 	private GUI gui;
 	private Network network;
+	private WebService webService;
 	private String currentUser;
+	private final String PATH = "config";
 
 	private HashMap<String, Vector<String>> users = new HashMap<String, Vector<String>>();
 
 	/**
 	 * Launch the application.
 	 * @throws InterruptedException 
+	 * @throws IOException 
 	 */
-	public static void main(String[] args) throws InterruptedException {
+	public static void main(String[] args) throws InterruptedException, IOException {
 		if (args.length != 1) {
 			System.err.println("Introduceti username-ul pentru autentificare!");
 			System.exit(-1);
 		}
 		Mediator core = new Mediator(args[0]);
 		
-		Vector<String> files = new Vector<String>();
-		files.add("movie.mp4");
-		files.add("so.pdf");
-		files.add("idp.pdf");
-		core.addUser(core.getUserName(), files);
+//		Vector<String> files = new Vector<String>();
+//		files.add("movie.mp4");
+//		files.add("so.pdf");
+//		files.add("idp.pdf");
+//		core.addUser(core.getUserName(), files);
 		
-		new Mock(core).run();
+//		new Mock(core).run();
 	}
 	
-	Mediator(String username) {
+	Mediator(String username) throws IOException {
 		currentUser = username;
+		webService = new WebService(this, PATH);
+		webService.loadConfig();
+//		users = webService.getUsers();
 		gui = new GUI(this);
 		network = new Network(this);
 		gui.start();
@@ -67,16 +76,18 @@ public class Mediator {
 	}
 	
 	/**
-	 * Add a user to the list of usersr
+	 * Add a user to the list of users
 	 */
 	public synchronized void addUser(final String userName, Vector<String> files) {
+		
 		users.put(userName, files);
 		EventQueue.invokeLater(new Runnable() {
-			@Override
-			public void run() {
-				gui.addUser(userName);
+		@Override
+		public void run() {
+			gui.addUser(userName);
 			}
 		});
+		
 	}
 	
 	/**
@@ -96,6 +107,7 @@ public class Mediator {
 	 * Add a file to be shared by a user
 	 */
 	public synchronized void addFileToUser(String userName, String fileName) {
+		
 		users.get(userName).add(fileName);
 		gui.addFileToUser(userName, fileName);
 	}

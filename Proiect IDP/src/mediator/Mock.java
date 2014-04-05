@@ -17,7 +17,7 @@ public class Mock {
 	/**
 	 * Adds some users and then simulates download requests
 	 */
-	void run() throws InterruptedException {
+	public void run() throws InterruptedException {
 		
 		String file;
 		int iteration = 0;
