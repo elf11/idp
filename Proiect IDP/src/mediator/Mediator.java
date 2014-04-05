@@ -48,10 +48,10 @@ public class Mediator {
 	Mediator(String username) throws IOException {
 		currentUser = username;
 		webService = new WebService(this, PATH);
-		webService.loadConfig();
 //		users = webService.getUsers();
 		gui = new GUI(this);
 		network = new Network(this);
+		webService.loadConfig();
 		gui.start();
 	}
 	
