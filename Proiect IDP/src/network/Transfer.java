@@ -1,8 +1,6 @@
 package network;
 
-import java.util.List;
-
-import javax.swing.SwingWorker;
+import java.nio.channels.SocketChannel;
 
 import mediator.TransferInfo;
 
@@ -10,7 +8,7 @@ import mediator.TransferInfo;
  * Class for holding specific network information about an ongoing transfer
  *
  */
-public abstract class Transfer extends SwingWorker<Integer, Integer>{
+public abstract class Transfer {
 
 	protected TransferInfo info;
 	
@@ -18,14 +16,10 @@ public abstract class Transfer extends SwingWorker<Integer, Integer>{
 		this.info = info;
 	}
 	
-	@Override
-	protected void process(List<Integer> chunks) {
-		int dataTransfered = 0;
-		for (Integer i : chunks) {
-			dataTransfered += i;
-		}
-		int speed = (int) (1300000 + Math.random() * 400000);
-		info.update(dataTransfered, speed);
-		super.process(chunks);
+	abstract public void processData(SocketChannel socket);
+	abstract public int getSelectionOp();
+
+	public void setTransferInfo(TransferInfo info) {
+		this.info = info;
 	}
 }

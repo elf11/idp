@@ -11,10 +11,10 @@ public class TransferInfo {
 	private String peer;
 	private int type;
 	private int id;
-	private int totalSize, transferedSize;
+	private long totalSize, transferedSize;
 	private Mediator mediator;
 	
-	public TransferInfo(String peer, String fileName, int id, int type, int totalSize, Mediator mediator) {
+	public TransferInfo(String peer, String fileName, int id, int type, long totalSize, Mediator mediator) {
 		this.fileName = fileName;
 		this.peer = peer;
 		this.type = type;
@@ -53,5 +53,9 @@ public class TransferInfo {
 			transferedSize = totalSize;
 		}
 		mediator.updateTransfer(id, getProgress(), speed);
+	}
+
+	public void setSize(long fileSize) {
+		totalSize = fileSize;	
 	}
 }

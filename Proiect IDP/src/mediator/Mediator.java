@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Vector;
 
-import webService.User;
 import webService.WebService;
 import network.Network;
 import gui.*;
@@ -36,13 +35,7 @@ public class Mediator {
 		}
 		Mediator core = new Mediator(args[0]);
 		
-//		Vector<String> files = new Vector<String>();
-//		files.add("movie.mp4");
-//		files.add("so.pdf");
-//		files.add("idp.pdf");
-//		core.addUser(core.getUserName(), files);
-		
-//		new Mock(core).run();
+		new Mock(core).run();
 	}
 	
 	Mediator(String username) throws IOException {
@@ -58,11 +51,10 @@ public class Mediator {
 	/**
 	 * Called by the network to signal that a file is requested by some user
 	 */
-	public void newIncomingTransfer(String dest, String fileName) {
-		int size = 500;
+	public TransferInfo newIncomingTransfer(String dest, String fileName, long fileSize) {
 		int id = gui.addTransfer(currentUser, dest, fileName, true);
-		TransferInfo tr = new TransferInfo(dest, fileName, id, 0, size, this);
-		network.startIncomingTransfer(tr);
+		TransferInfo tr = new TransferInfo(dest, fileName, id, 0, fileSize, this);
+		return tr;
 	}
 	
 	/**
@@ -72,8 +64,9 @@ public class Mediator {
 		int size = 500;
 		int id = gui.addTransfer(source, currentUser, fileName, false);
 		TransferInfo tr = new TransferInfo(source, fileName, id, 1, size, this);
-		network.startOutgoingTransfer(tr);
+		network.startOutgoingTransfer(tr, fileName, "127.0.0.1", 30000);
 	}
+
 	
 	/**
 	 * Add a user to the list of users
@@ -135,7 +128,12 @@ public class Mediator {
 	 * Updates progress and speed of transfer. Called by the publish method of a Swing Worker
 	 * transfering a file
 	 */
-	public void updateTransfer(int id, Float progress, int speed) {
-		gui.updateProgress(id, progress, speed);
+	public void updateTransfer(final int id, final Float progress, final int speed) {
+		EventQueue.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				gui.updateProgress(id, progress, speed);
+			}
+		});
 	}
 }
