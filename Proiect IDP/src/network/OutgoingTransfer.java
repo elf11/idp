@@ -9,6 +9,8 @@ import java.nio.channels.FileChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 
+import org.apache.log4j.Logger;
+
 import mediator.TransferInfo;
 
 /**
@@ -24,6 +26,7 @@ public class OutgoingTransfer extends Transfer {
 	private MappedByteBuffer fileBuffer;
 	private String fileName;
 	private RandomAccessFile file;
+	private static Logger log = Logger.getLogger("OutgoingTransfer ");
 	
 	public OutgoingTransfer(TransferInfo tr, String fileName, String address, int port, SocketChannel socket) {
 		super(tr);
@@ -32,7 +35,9 @@ public class OutgoingTransfer extends Transfer {
 		try {
 			file = new RandomAccessFile(fileName + ".zip", "rw");
 			requestTransfer(socket);
+			log.info("Initialized a new outgoing transfer");
 		} catch (FileNotFoundException e) {
+			log.error("Failed to initialized a new outgoing transfer");
 			e.printStackTrace();
 		}
 	}
@@ -51,7 +56,9 @@ public class OutgoingTransfer extends Transfer {
 		while(size > 0) {
 			try {
 				size -= socket.write(nameBuffer);
+				log.info("Wrote on the outgoing socket!");
 			} catch (IOException e) {
+				log.error("Failed to wrote on the outgoing socket!");
 				e.printStackTrace();
 			}
 		}
@@ -81,9 +88,11 @@ public class OutgoingTransfer extends Transfer {
 				file.getChannel().close();
 				file.close();
 				socket.close();
+				log.info("Closed the file and the socket!");
 			}
 			
 		} catch (IOException e) {
+			log.error("Failed to transfer data!");
 			e.printStackTrace();
 		}
 	}

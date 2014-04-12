@@ -11,6 +11,8 @@ import java.util.Iterator;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import org.apache.log4j.Logger;
+
 /** 
  * Class that implements the listening part of the network component
  */
@@ -19,6 +21,7 @@ public class Listener implements Runnable {
 	private Selector selector;
 	private ServerSocketChannel listener;
 	private ExecutorService pool;
+	private static Logger log = Logger.getLogger("Listener ");
 	
 	public static final String IP = "127.0.0.1";
 	public static final int PORT = 30000;
@@ -37,6 +40,7 @@ public class Listener implements Runnable {
 		
 		pool = Executors.newFixedThreadPool(5);
 		pool.submit(this);
+		log.info("Succesfully initialized a new listener!");
 	}
 	
 	@Override
@@ -49,6 +53,7 @@ public class Listener implements Runnable {
 					// get current event and REMOVE it from the list!!!
 					final SelectionKey key = it.next();
 					it.remove();
+					log.info("Succesfully removed the current event from the list " + it.toString());
 					if (key.isAcceptable()) {
 						/* Create a new connection that will be used to send a file */
 						ServerSocketChannel listener= (ServerSocketChannel)key.channel();
@@ -56,6 +61,7 @@ public class Listener implements Runnable {
 						newConn.configureBlocking(false);
 						newConn.register(selector, SelectionKey.OP_READ, new IncomingTransfer(network));
 						selector.wakeup();
+						log.info("Created a new connection to send a file");
 					} else 	if (key.isReadable() || key.isWritable()) {
 						/* Deregister the channel and dispatch the event for execution on the thread pool */
 						key.channel().register(selector, 0, key.attachment());
@@ -68,8 +74,10 @@ public class Listener implements Runnable {
 									if (key.channel().isOpen()) {
 										key.channel().register(selector, transfer.getSelectionOp(), transfer);
 										selector.wakeup();
+										log.info("Succesfully deregister the event and dispatched the event");
 									}
 								} catch (ClosedChannelException e) {
+									log.error("Failed to deregister the event and to dispatch the event");
 									e.printStackTrace();
 								}
 							}

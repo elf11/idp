@@ -1,8 +1,9 @@
 package mediator;
 
+import org.apache.log4j.Logger;
+
 /**
  * Class that stores general information about a transfer that is in progress
- * @author Andrei
  *
  */
 public class TransferInfo {
@@ -13,6 +14,7 @@ public class TransferInfo {
 	private int id;
 	private long totalSize, transferedSize;
 	private Mediator mediator;
+	private static Logger log = Logger.getLogger("TransferInfo ");
 	
 	public TransferInfo(String peer, String fileName, int id, int type, long totalSize, Mediator mediator) {
 		this.fileName = fileName;
@@ -21,6 +23,7 @@ public class TransferInfo {
 		this.id = id;
 		this.totalSize = totalSize;
 		this.mediator = mediator;
+		log.info("Initialized a new TransferInfo");
 	}
 	
 	public int getType() {

@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Vector;
 
+import org.apache.log4j.Logger;
+
 import webService.WebService;
 import network.Network;
 import gui.*;
@@ -20,6 +22,7 @@ public class Mediator {
 	private WebService webService;
 	private String currentUser;
 	private final String PATH = "config";
+	private static Logger log = Logger.getLogger("Mediator ");
 
 	private HashMap<String, Vector<String>> users = new HashMap<String, Vector<String>>();
 
@@ -38,7 +41,7 @@ public class Mediator {
 		new Mock(core).run();
 	}
 	
-	Mediator(String username) throws IOException {
+	public Mediator(String username) throws IOException {
 		currentUser = username;
 		webService = new WebService(this, PATH);
 //		users = webService.getUsers();
@@ -46,12 +49,14 @@ public class Mediator {
 		network = new Network(this);
 		webService.loadConfig();
 		gui.start();
+		log.info("Initialized the mediator");
 	}
 	
 	/**
 	 * Called by the network to signal that a file is requested by some user
 	 */
 	public TransferInfo newIncomingTransfer(String dest, String fileName, long fileSize) {
+		log.info("Registered a new IncomingTransfer with the mediator");
 		int id = gui.addTransfer(currentUser, dest, fileName, true);
 		TransferInfo tr = new TransferInfo(dest, fileName, id, 0, fileSize, this);
 		return tr;
@@ -61,6 +66,7 @@ public class Mediator {
 	 * Called by the GUI to request starting the transfer of a file
 	 */
 	public void newOutgoingTransfer(String source, String fileName) {
+		log.info("Registered a new OutgoingTransfer with the mediator");
 		int size = 500;
 		int id = gui.addTransfer(source, currentUser, fileName, false);
 		TransferInfo tr = new TransferInfo(source, fileName, id, 1, size, this);
@@ -80,7 +86,7 @@ public class Mediator {
 			gui.addUser(userName);
 			}
 		});
-		
+		log.info("Registered the addUser function with the mediator");
 	}
 	
 	/**
@@ -94,6 +100,7 @@ public class Mediator {
 				gui.removeFileFromUser(userName, fileName);
 			}
 		});
+		log.info("Registered the removeFileFromUser with the mediator");
 	}
 	
 	/**
@@ -103,6 +110,7 @@ public class Mediator {
 		
 		users.get(userName).add(fileName);
 		gui.addFileToUser(userName, fileName);
+		log.info("Registered the addFileToUser with the mediator");
 	}
 	
 	public HashMap<String, Vector<String>> getUsers() {
@@ -122,6 +130,7 @@ public class Mediator {
 				}	
 			});
 		}
+		log.info("Registered the removing of an user with the mediator");
 	}
 	
 	/**
@@ -135,5 +144,6 @@ public class Mediator {
 				gui.updateProgress(id, progress, speed);
 			}
 		});
+		log.info("Registered an update in the transfer with the mediator");
 	}
 }

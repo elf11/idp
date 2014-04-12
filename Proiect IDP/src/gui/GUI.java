@@ -35,6 +35,9 @@ import javax.swing.JPanel;
 import javax.swing.JButton;
 import javax.swing.SwingConstants;
 import javax.swing.JLabel;
+
+import org.apache.log4j.Logger;
+
 import net.miginfocom.swing.MigLayout;
 
 /**
@@ -68,6 +71,7 @@ public class GUI {
 	private String currentUser = "";
 	private JPanel buttonPane;
 	private JLabel nameLabel;
+	private static Logger log = Logger.getLogger("Network ");
 
 	/**
 	 * Constructor, receives an instance of the mediator class and gets the username of the current user.
@@ -255,6 +259,8 @@ public class GUI {
         
         nameLabel = new JLabel("Logged in as " + currentUser);
         frmProiectIdp.getContentPane().add(nameLabel, "cell 1 5,alignx left,aligny top");
+        
+        log.info("Initialized the GUI");
 	}
 	
 	/**
@@ -280,6 +286,7 @@ public class GUI {
 	public void addUser(String username) {
 		usersModel.addElement(username);
 		statusBar.setText(username + " has logged in.");
+		log.info("Added the user " + username);
 	}
 	
 	/**
@@ -293,6 +300,7 @@ public class GUI {
 			selectedUser = "";
 		}
 		statusBar.setText(userName + " has logged out.");
+		log.info("The user " + userName + " has logged out.");
 	}
 	
 	/**
@@ -304,6 +312,7 @@ public class GUI {
 		if (user.equals(selectedUser)) {
 			filesModel.addElement(fileName);
 			statusBar.setText(user + " has shared file " + fileName + ".");
+			log.info("The user " + user + " has shared file " + fileName);
 		}
 	}
 	
@@ -317,6 +326,7 @@ public class GUI {
 			int index = filesList.getSelectedIndex();
 	        filesModel.remove(filesList.getSelectedIndex());
 	        statusBar.setText(user + " has stopped sharing file " + fileName + ".");
+	        log.info("The user " + user + " has removed the shared file " + fileName);
 	        
 	        if (filesModel.isEmpty()) {
 	            removeFileButton.setEnabled(false);
@@ -342,6 +352,7 @@ public class GUI {
 			if (transferTableData.getValueAt(i, RowData.SOURCE).equals(user) && 
 					transferTableData.getValueAt(i, RowData.NAME).equals(file)) {
 				if (transferTableData.getValueAt(i, RowData.STATUS) != Status.Completed) {
+					log.info("The transfer already exists");
 					return true;
 				} else {
 					transferTableData.removeRow(i);
@@ -365,9 +376,11 @@ public class GUI {
 		if (sending) {
 			status = Status.Sending;
 			statusBar.setText("Sending file \"" + fileName + "\" to " + dest + ".");
+			log.info("Sending file \"" + fileName + "\" to " + dest);
 		} else {
 			status = Status.Receiving;
 			statusBar.setText("Receiving file \"" + fileName + "\" from " + source + ".");
+			log.info("Receiving file \"" + fileName + "\" from " + source);
 		}
 		
 		final RowData newRow = new RowData(source, dest, fileName, 0f, status);
@@ -418,6 +431,7 @@ public class GUI {
 						null, "Name is duplicated!", "Error", JOptionPane.ERROR_MESSAGE);
 				return;
 			}
+			log.info("Added the file " + text + " to the user " + selectedUser);
 			mediator.addFileToUser(selectedUser, text);
 		}
 	};
@@ -429,6 +443,7 @@ public class GUI {
 		
 		@Override
 		public void actionPerformed(ActionEvent e) {
+			log.info("Removed the file " + filesList.getSelectedValue() + " from the user " + selectedUser);
 			mediator.removeFileFromUser(selectedUser, filesList.getSelectedValue());
 		}
     };

@@ -8,6 +8,8 @@ import java.nio.channels.FileChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 
+import org.apache.log4j.Logger;
+
 /**
  * Class that implements receiving a file
  *
@@ -20,10 +22,12 @@ public class IncomingTransfer extends Transfer {
 	private long fileSize;
 	private String fileName;
 	private RandomAccessFile file;
+	private static Logger log = Logger.getLogger("IncomingTransfer ");
 	
 	public IncomingTransfer(Network network) {
 		super(null);
 		this.network = network;
+		log.info("Initialized a new IncomingTransfer");
 	}
 
 	/** 
@@ -40,8 +44,10 @@ public class IncomingTransfer extends Transfer {
 					file.getChannel().close();
 					file.close();
 					socket.close();
+					log.info("Successfully closed the file and the socket!");
 				}
 			} catch (IOException e) {
+				log.error("Failed to close the file and the socket!");
 				e.printStackTrace();
 			}
 		} else {
@@ -63,17 +69,21 @@ public class IncomingTransfer extends Transfer {
 				file = new RandomAccessFile(fileName + "(0).zip", "r");
 				fileSize = file.getChannel().size();
 				fileBuffer = file.getChannel().map(FileChannel.MapMode.READ_ONLY, 0, file.getChannel().size());
-				
+				log.info("Succesfully read the name of the file and mapped it into the memory");
+
 				/* Send the file size to the receiving user */
 				buf.clear();
 				buf.putLong(fileSize);
 				buf.flip();
 				socket.write(buf);
+				log.info("Succesfully send the file size to the receiving user");
+				
 				
 				/* Register the transfer with the mediator */
 				network.startIncomingTransfer(this, "_temp_", fileName, fileSize);
 				init = true;
 			} catch (IOException e) {
+				log.error("Failed to open/read the data socket/file");
 				e.printStackTrace();
 			}
 			init = true;

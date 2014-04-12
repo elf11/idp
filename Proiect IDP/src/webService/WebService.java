@@ -4,7 +4,9 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Vector;
+
 import org.apache.log4j.*;
 
 import mediator.Mediator;
@@ -14,16 +16,27 @@ public class WebService {
 	private Mediator mediator;
 	private Vector<User> users;
 	private String path;
+	
+	// doar pentru testarea webservice-ului adaugam chestia asta
+	private HashMap<String, Vector<String>> localUsers = new HashMap<String, Vector<String>>();
+	private Vector<String> localFiles;
+	
 	Logger log = Logger.getLogger("WebService");
 	
 	public WebService(Mediator mediator, String path){
 		this.mediator = mediator;
 		this.path = path;
 		this.users = new Vector<User>();
+		log.info("Succesfully initialized the WebService");
 	}
 	
 	public Vector<User> getUsers() {
 		return users;
+	}
+	
+	// doar pentru testarea webservice-ului adaugam chestia asta - le scot pentru ultima etapa
+	public HashMap<String, Vector<String>> getLocalUsers() {
+		return localUsers;
 	}
 	
 	/**
@@ -33,14 +46,18 @@ public class WebService {
 	 * files are stored
 	 * @throws IOException 
 	 */
-	public void loadConfig() throws IOException {
+	public void loadConfig() {
 		File dir = new File(path);
+		BufferedReader br = null;
 		
 		for (File f : dir.listFiles()) {
+			// doar pentru testarea webservice-ului adaugam chestia asta - le scot pentru ultima etapa
+			localFiles = new Vector<String>();
 			if (f.isFile() && f.getName().endsWith(".txt")) {
-				String username = f.getName().substring(0, f.getName().length() - 4);
-				BufferedReader br = new BufferedReader(new FileReader(f.getPath()));
-			    try {
+				try {
+					String username = f.getName().substring(0, f.getName().length() - 4);
+					br = new BufferedReader(new FileReader(f.getPath()));
+			    
 			        String ip = br.readLine().trim();
 			        Integer port = Integer.parseInt(br.readLine().trim());
 			        User user = new ConcreteUser(username, ip, port);
@@ -51,16 +68,28 @@ public class WebService {
 			        
 			        for (File userFile : userDir.listFiles()) {
 			        	if (userFile.isFile()) {
+			        		localFiles.add(userFile.getName());
 			        		user.addFile(userFile.getName());
 			        	}
 			        }
 			        
 			        users.add(user);
 			        log.info("User added: " + user.getName() + " " + user.getIp() + " " +  user.getPort());
-			        mediator.addUser(user.getName(), user.getFiles());
 			        
+			        // doar pentru testarea webservice-ului adaugam chestia asta - le scot pentru ultima etapa
+			        localUsers.put(username, localFiles);
+			        
+			        mediator.addUser(user.getName(), user.getFiles());
+			    } catch(IOException e) {
+			    	e.printStackTrace();
+			    	log.error("Failed to read the list of files for each user");
 			    } finally {
-			        br.close();
+			        try {
+						br.close();
+					} catch (IOException e) {
+						log.error("Failed to close the buffer reader");
+						e.printStackTrace();
+					}
 			    }
 			}
 		}
