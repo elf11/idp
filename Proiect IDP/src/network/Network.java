@@ -26,7 +26,6 @@ public class Network {
 	public Network(Mediator mediator, String path, String IP, int port) {
 		this.mediator = mediator;
 		this.PATH = path;
-		System.out.println(this.PATH);
 		this.IP = IP;
 		this.port = port;
 		log.info("Started the network component");

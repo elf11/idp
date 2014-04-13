@@ -1,4 +1,4 @@
-<project basedir="." default="build" name="Proiect IDP">
+<project basedir="." default="run" name="Proiect IDP">
     <property environment="env"/>
     <property name="ECLIPSE_HOME" value="D:/eclipse"/>
     <property name="junit.output.dir" value="junit"/>
@@ -64,11 +64,23 @@
             <classpath refid="Proiect IDP.classpath"/>
         </java>
     </target>
-    <target name="Mediator">
+    <target name="run">
+    	<parallel>
         <java classname="mediator.Mediator" failonerror="true" fork="yes">
             <arg line="andrei"/>
             <classpath refid="Proiect IDP.classpath"/>
         </java>
+    	
+        <java classname="mediator.Mediator" failonerror="true" fork="yes">
+            <arg line="oana"/>
+            <classpath refid="Proiect IDP.classpath"/>
+        </java>
+            	
+         <java classname="mediator.Mediator" failonerror="true" fork="yes">
+            <arg line="roland"/>
+            <classpath refid="Proiect IDP.classpath"/>
+         </java>
+    	 </parallel>
     </target>
     <target name="NetworkComponentTest">
         <mkdir dir="${junit.output.dir}"/>
