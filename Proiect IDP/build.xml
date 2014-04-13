@@ -1,18 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <project basedir="." default="run" name="Proiect IDP">
     <property environment="env"/>
-    <property name="ECLIPSE_HOME" value="D:/eclipse"/>
+    <property name="ECLIPSE_HOME" value="../../../../../../opt/eclipse"/>
     <property name="junit.output.dir" value="junit"/>
     <property name="debuglevel" value="source,lines,vars"/>
     <property name="target" value="1.7"/>
     <property name="source" value="1.7"/>
+    <path id="JUnit 4.libraryclasspath">
+        <pathelement location="${ECLIPSE_HOME}/plugins/org.junit_4.11.0.v201303080030/junit.jar"/>
+        <pathelement location="${ECLIPSE_HOME}/plugins/org.hamcrest.core_1.3.0.v201303031735.jar"/>
+    </path>
     <path id="Proiect IDP.classpath">
         <pathelement location="bin"/>
+        <path refid="JUnit 4.libraryclasspath"/>
         <pathelement location="lib/commons-io-2.4.jar"/>
         <pathelement location="lib/hamcrest-all-1.3.jar"/>
         <pathelement location="lib/junit-4.11.jar"/>
         <pathelement location="lib/log4j-1.2.17.jar"/>
         <pathelement location="lib/miglayout15-swing.jar"/>
         <pathelement location="lib/mockito-all-1.9.5.jar"/>
+    </path>
+    <path id="run.Mediator.classpath">
+        <path refid="Proiect IDP.classpath"/>
+        <pathelement location="."/>
     </path>
     <target name="init">
         <mkdir dir="bin"/>
@@ -49,46 +59,65 @@
         <property name="build.compiler" value="org.eclipse.jdt.core.JDTCompilerAdapter"/>
         <antcall target="build"/>
     </target>
-    <target name="GUI">
-        <java classname="gui.GUI" failonerror="true" fork="yes">
+    <target name="ConcreteUserTest">
+        <mkdir dir="${junit.output.dir}"/>
+        <junit fork="yes" printsummary="withOutAndErr">
+            <formatter type="xml"/>
+            <test name="junitTests.ConcreteUserTest" todir="${junit.output.dir}"/>
+            <classpath refid="Proiect IDP.classpath"/>
+        </junit>
+    </target>
+    <target name="WSTest">
+        <java classname="junitTests.WSTest" failonerror="true" fork="yes">
             <classpath refid="Proiect IDP.classpath"/>
         </java>
     </target>
-    <target name="Main (1)">
-        <java classname="mediator.Main" failonerror="true" fork="yes">
-            <classpath refid="Proiect IDP.classpath"/>
-        </java>
-    </target>
-    <target name="Main (2)">
-        <java classname="org.apache.log4j.chainsaw.Main" failonerror="true" fork="yes">
-            <classpath refid="Proiect IDP.classpath"/>
-        </java>
-    </target>
-    <target name="run">
-    	<parallel>
-        <java classname="mediator.Mediator" failonerror="true" fork="yes">
-            <arg line="andrei"/>
-            <classpath refid="Proiect IDP.classpath"/>
-        </java>
-    	
+    <target name="NanoShare">
         <java classname="mediator.Mediator" failonerror="true" fork="yes">
             <arg line="oana"/>
             <classpath refid="Proiect IDP.classpath"/>
         </java>
-            	
-         <java classname="mediator.Mediator" failonerror="true" fork="yes">
-            <arg line="roland"/>
-            <classpath refid="Proiect IDP.classpath"/>
-         </java>
-    	 </parallel>
     </target>
-    <target name="NetworkComponentTest">
+    <target name="Mediator">
+        <java classname="mediator.Mediator" failonerror="true" fork="yes">
+            <arg line="oana"/>
+            <classpath refid="run.Mediator.classpath"/>
+        </java>
+    </target>
+	<target name="run">
+	    	<parallel>
+	        <java classname="main.NanoShare" failonerror="true" fork="yes">
+	        	<jvmarg line="-Dlog4j.configuration=file:log4j.properties"/>
+	            <arg line="andrei"/>
+	            <classpath refid="Proiect IDP.classpath"/>
+	        </java>
+	    	
+	        <java classname="main.NanoShare" failonerror="true" fork="yes">
+	        	<jvmarg line="-Dlog4j.configuration=file:log4j.properties"/>
+	            <arg line="oana"/>
+	            <classpath refid="Proiect IDP.classpath"/>
+	        </java>
+	            	
+	         <java classname="main.NanoShare" failonerror="true" fork="yes">
+	         	<jvmarg line="-Dlog4j.configuration=file:log4j.properties"/>
+	            <arg line="roland"/>
+	            <classpath refid="Proiect IDP.classpath"/>
+	         </java>
+	    	 </parallel>
+	    </target>
+    <target name="WebServiceTest">
         <mkdir dir="${junit.output.dir}"/>
         <junit fork="yes" printsummary="withOutAndErr">
             <formatter type="xml"/>
-            <test name="junitTests.NetworkComponentTest" todir="${junit.output.dir}"/>
+            <test name="junitTests.WebServiceTest" todir="${junit.output.dir}"/>
+            <jvmarg line="-Dlog4j.configuration=file:log4j.properties"/>
             <classpath refid="Proiect IDP.classpath"/>
         </junit>
+    </target>
+    <target name="Main (17)">
+        <java classname="mediator.Main" failonerror="true" fork="yes">
+            <classpath refid="Proiect IDP.classpath"/>
+        </java>
     </target>
     <target name="junitreport">
         <junitreport todir="${junit.output.dir}">
