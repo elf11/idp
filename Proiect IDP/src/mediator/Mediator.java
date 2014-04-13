@@ -24,19 +24,6 @@ public class Mediator {
 	private static Logger log = Logger.getLogger("Mediator ");
 
 	private HashMap<String, User> users = new HashMap<String, User>();
-
-	/**
-	 * Launch the application.
-	 * @throws InterruptedException 
-	 * @throws IOException 
-	 */
-	public static void main(String[] args) throws InterruptedException, IOException {
-		if (args.length != 1) {
-			System.err.println("Introduceti username-ul pentru autentificare!");
-			System.exit(-1);
-		}
-		new Mediator(args[0]);
-	}
 	
 	public Mediator(String username) throws IOException {
 		currentUser = username;
