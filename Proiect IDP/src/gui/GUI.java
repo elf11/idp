@@ -132,7 +132,7 @@ public class GUI {
 				if (userName != null) {
 					selectedUser = userName;
 					filesModel.clear();
-					for (String file : mediator.getUsers().get(userName))
+					for (String file : mediator.getUsers().get(userName).getFiles())
 						filesModel.addElement(file);
 					
 					if (selectedUser.equals(currentUser)) {

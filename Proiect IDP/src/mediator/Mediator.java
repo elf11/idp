@@ -3,7 +3,6 @@ package mediator;
 import java.awt.EventQueue;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Vector;
 
 import org.apache.log4j.Logger;
 
@@ -24,7 +23,7 @@ public class Mediator {
 	private final String PATH = "config";
 	private static Logger log = Logger.getLogger("Mediator ");
 
-	private HashMap<String, Vector<String>> users = new HashMap<String, Vector<String>>();
+	private HashMap<String, User> users = new HashMap<String, User>();
 
 	/**
 	 * Launch the application.
@@ -36,18 +35,16 @@ public class Mediator {
 			System.err.println("Introduceti username-ul pentru autentificare!");
 			System.exit(-1);
 		}
-		Mediator core = new Mediator(args[0]);
-		
-		new Mock(core).run();
+		new Mediator(args[0]);
 	}
 	
 	public Mediator(String username) throws IOException {
 		currentUser = username;
 		webService = new WebService(this, PATH);
-//		users = webService.getUsers();
 		gui = new GUI(this);
-		network = new Network(this);
 		webService.loadConfig();
+		User localUser = users.get(currentUser);
+		network = new Network(this, PATH + "/" + currentUser + "/", localUser.getIp(), localUser.getPort());
 		gui.start();
 		log.info("Initialized the mediator");
 	}
@@ -70,16 +67,19 @@ public class Mediator {
 		int size = 500;
 		int id = gui.addTransfer(source, currentUser, fileName, false);
 		TransferInfo tr = new TransferInfo(source, fileName, id, 1, size, this);
-		network.startOutgoingTransfer(tr, fileName, "127.0.0.1", 30000);
+		User peer = users.get(source);
+		if (peer != null) {
+			network.startOutgoingTransfer(tr, fileName, peer.getIp(), peer.getPort());
+		}
 	}
 
-	
 	/**
 	 * Add a user to the list of users
 	 */
-	public synchronized void addUser(final String userName, Vector<String> files) {
+	public synchronized void addUser(User user) {
 		
-		users.put(userName, files);
+		final String userName = user.getName();
+		users.put(userName, user);
 		EventQueue.invokeLater(new Runnable() {
 		@Override
 		public void run() {
@@ -88,12 +88,12 @@ public class Mediator {
 		});
 		log.info("Registered the addUser function with the mediator");
 	}
-	
+
 	/**
 	 * Removes a file shared by a user
 	 */
 	public synchronized void removeFileFromUser(final String userName, final String fileName) {
-		users.get(userName).removeElement(fileName);
+		users.get(userName).getFiles().removeElement(fileName);
 		EventQueue.invokeLater(new Runnable() {
 			@Override
 			public void run() {
@@ -106,16 +106,22 @@ public class Mediator {
 	/**
 	 * Add a file to be shared by a user
 	 */
-	public synchronized void addFileToUser(String userName, String fileName) {
+	public synchronized void addFileToUser(final String userName, final String fileName) {
 		
-		users.get(userName).add(fileName);
-		gui.addFileToUser(userName, fileName);
+		users.get(userName).getFiles().add(fileName);
+		EventQueue.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				gui.addFileToUser(userName, fileName);
+			}
+		});
 		log.info("Registered the addFileToUser with the mediator");
 	}
-	
-	public HashMap<String, Vector<String>> getUsers() {
+
+	public HashMap<String, User> getUsers() {
 		return users;
 	}
+
 	
 	public String getUserName() {
 		return currentUser;

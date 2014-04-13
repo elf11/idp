@@ -7,10 +7,10 @@ import java.util.HashMap;
 import java.util.Vector;
 
 import mediator.Mediator;
+import mediator.User;
 
 import org.junit.Test;
 
-import webService.User;
 import webService.WebService;
 
 public class WebServiceTest {

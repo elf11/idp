@@ -1,10 +1,10 @@
-package webService;
+package mediator;
 
 import java.util.Vector;
 
 import org.apache.log4j.Logger;
 
-public class ConcreteUser implements User{
+public class User {
 	
 	private String name;
 	private String ip;
@@ -12,7 +12,7 @@ public class ConcreteUser implements User{
 	private Vector<String> filelist;
 	private static Logger log = Logger.getLogger("Network ");
 	
-	public ConcreteUser(String name, String ip, int port) {
+	public User(String name, String ip, int port) {
 		this.name = name;
 		this.ip = ip;
 		this.port = port;
@@ -21,32 +21,26 @@ public class ConcreteUser implements User{
 	}
 	
 
-	@Override
 	public String getIp() {
 		return ip;
 	}
 
-	@Override
 	public String getName() {
 		return name;
 	}
 
-	@Override
 	public int getPort() {
 		return port;
 	}
 
-	@Override
 	public Vector<String> getFiles() {
 		return filelist;
 	}
 
-	@Override
 	public void addFile(String fileName) {
 		filelist.add(fileName);
 	}
 
-	@Override
 	public void removeFile(String fileName) {
 		filelist.remove(fileName);
 	}

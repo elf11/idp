@@ -17,21 +17,28 @@ public class Network {
 
 	final Mediator mediator;
 	private Listener listener;
+	private String IP;
+	private int port;
+	private String PATH;
 	private static Logger log = Logger.getLogger("Network ");
 	
-	public Network(Mediator mediator) {
+	
+	public Network(Mediator mediator, String path, String IP, int port) {
 		this.mediator = mediator;
+		this.PATH = path;
+		System.out.println(this.PATH);
+		this.IP = IP;
+		this.port = port;
+		log.info("Started the network component");
 		try {
 			listener = new Listener(this);
-			log.info("Succesfully opened a new listener.");
 		} catch (IOException e) {
-			log.error("Couldn't open a new listener!");
 			e.printStackTrace();
 		}
 	}
-	
+
 	public void startIncomingTransfer(Transfer transfer, String dest, String fileName, long fileSize) {
-		log.info("Start new incomming transfer");
+		log.info("Start new incomming transfer from " + dest + " for file " + fileName);
 		TransferInfo tr = mediator.newIncomingTransfer(dest, fileName, fileSize);
 		transfer.setTransferInfo(tr);
 	}
@@ -40,13 +47,25 @@ public class Network {
 		try {
 			SocketChannel socket = SocketChannel.open();
 			socket.connect(new InetSocketAddress(address, port));
+			OutgoingTransfer transfer = new OutgoingTransfer(info, PATH, fileName);
+			transfer.requestTransfer(socket);
 			socket.configureBlocking(false);
-			Transfer transfer = new OutgoingTransfer(info, fileName, address, port, socket);
-			socket.register(listener.getSelector(), transfer.getSelectionOp(), transfer);
+			listener.registerSocket(socket, transfer);
 			log.info("Start new outgoing transfer");
 		} catch (IOException e) {
-			log.error("Failed to start a new outgoing transfer");
-			e.printStackTrace();
+			log.error(e);
 		}
+	}
+
+	public String getIp() {
+		return IP;
+	}
+	
+	public int getPort() {
+		return port;
+	}
+
+	public String getPath() {
+		return PATH;
 	}
 }

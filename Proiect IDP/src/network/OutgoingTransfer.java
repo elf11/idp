@@ -28,19 +28,17 @@ public class OutgoingTransfer extends Transfer {
 	private RandomAccessFile file;
 	private static Logger log = Logger.getLogger("OutgoingTransfer ");
 	
-	public OutgoingTransfer(TransferInfo tr, String fileName, String address, int port, SocketChannel socket) {
+	public OutgoingTransfer(TransferInfo tr, String path, String fileName) {
 		super(tr);
 		this.fileName = fileName;
 		
 		try {
-			file = new RandomAccessFile(fileName + ".zip", "rw");
-			requestTransfer(socket);
-			log.info("Initialized a new outgoing transfer");
+			file = new RandomAccessFile(path + fileName, "rw");
 		} catch (FileNotFoundException e) {
-			log.error("Failed to initialized a new outgoing transfer");
-			e.printStackTrace();
+			log.error(e);
 		}
 	}
+
 	
 	/**
 	 * Request the file for transfer
@@ -59,7 +57,7 @@ public class OutgoingTransfer extends Transfer {
 				log.info("Wrote on the outgoing socket!");
 			} catch (IOException e) {
 				log.error("Failed to wrote on the outgoing socket!");
-				e.printStackTrace();
+				log.error(e);
 			}
 		}
 	}
@@ -93,7 +91,7 @@ public class OutgoingTransfer extends Transfer {
 			
 		} catch (IOException e) {
 			log.error("Failed to transfer data!");
-			e.printStackTrace();
+			log.error(e);
 		}
 	}
 

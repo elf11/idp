@@ -10,6 +10,7 @@ import java.nio.channels.SocketChannel;
 import java.util.Iterator;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.log4j.Logger;
 
@@ -21,32 +22,35 @@ public class Listener implements Runnable {
 	private Selector selector;
 	private ServerSocketChannel listener;
 	private ExecutorService pool;
+	private ReentrantLock selectorLock;
 	private static Logger log = Logger.getLogger("Listener ");
-	
-	public static final String IP = "127.0.0.1";
-	public static final int PORT = 30000;
 	
 	private Network network;
 	
 	public Listener(Network network) throws IOException {
 		this.network = network;
 		selector = Selector.open();
+		selectorLock = new ReentrantLock();
 		
 		/* Open listener and register it with the selector*/
 		listener = ServerSocketChannel.open();
-		listener.socket().bind(new InetSocketAddress(IP, PORT));
+		listener.socket().bind(new InetSocketAddress(network.getIp(), network.getPort()));
 		listener.configureBlocking(false);
 		listener.register(selector, SelectionKey.OP_ACCEPT, null);
 		
 		pool = Executors.newFixedThreadPool(5);
 		pool.submit(this);
-		log.info("Succesfully initialized a new listener!");
+		log.info("Listener started with address: " + network.getIp() + " and port " + network.getPort());
+		
 	}
 	
 	@Override
 	public void run() {
 		while (true) {
 			try {
+				/* Ensure the selector is not being modified */
+				selectorLock.lock();
+				selectorLock.unlock();
 				selector.select();
 				/* Iterate over the events */
 				for (Iterator<SelectionKey> it = selector.selectedKeys().iterator(); it.hasNext(); ) {
@@ -73,11 +77,10 @@ public class Listener implements Runnable {
 								try {
 									if (key.channel().isOpen()) {
 										key.channel().register(selector, transfer.getSelectionOp(), transfer);
-										selector.wakeup();
-										log.info("Succesfully deregister the event and dispatched the event");
+	log.info("Succesfully deregister the event and dispatched the event");
+									selector.wakeup();
 									}
 								} catch (ClosedChannelException e) {
-									log.error("Failed to deregister the event and to dispatch the event");
 									e.printStackTrace();
 								}
 							}
@@ -85,12 +88,32 @@ public class Listener implements Runnable {
 					}
 				}
 			} catch (IOException e) {
-				e.printStackTrace();
+				log.error("Failed to deregister the event and to dispatch the event");
+				log.error(e);
 			}
 		}
 	}
 	
 	public Selector getSelector() {
 		return selector;
+	}
+
+	/* Register a socket for selection, with the corresponding Transfer object */
+	public void registerSocket(SocketChannel socket, Transfer transfer) {
+		try {
+			selectorLock.lock();
+			selector.wakeup();
+			socket.register(selector, transfer.getSelectionOp(), transfer);
+			log.info("Registered a new socket with the selector");
+		} catch (ClosedChannelException e) {
+			log.error(e);
+			try {
+				socket.close();
+			} catch (IOException e1) {
+				log.error(e1);
+			}
+		} finally {
+			selectorLock.unlock();
+		}
 	}
 }

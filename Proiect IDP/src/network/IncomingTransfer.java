@@ -48,7 +48,7 @@ public class IncomingTransfer extends Transfer {
 				}
 			} catch (IOException e) {
 				log.error("Failed to close the file and the socket!");
-				e.printStackTrace();
+				log.error(e);
 			}
 		} else {
 			/* If the file is yet unknown, get the name and open it. */
@@ -66,25 +66,29 @@ public class IncomingTransfer extends Transfer {
 				fileName = new String(nameArray);
 				
 				/* Open the file and map it into memory */
-				file = new RandomAccessFile(fileName + "(0).zip", "r");
+				file = new RandomAccessFile(network.getPath() + fileName, "r");
 				fileSize = file.getChannel().size();
 				fileBuffer = file.getChannel().map(FileChannel.MapMode.READ_ONLY, 0, file.getChannel().size());
 				log.info("Succesfully read the name of the file and mapped it into the memory");
-
+				
 				/* Send the file size to the receiving user */
 				buf.clear();
 				buf.putLong(fileSize);
 				buf.flip();
 				socket.write(buf);
-				log.info("Succesfully send the file size to the receiving user");
-				
+				log.info("Succesfully sent the file size to the receiving user");
 				
 				/* Register the transfer with the mediator */
 				network.startIncomingTransfer(this, "_temp_", fileName, fileSize);
 				init = true;
 			} catch (IOException e) {
 				log.error("Failed to open/read the data socket/file");
-				e.printStackTrace();
+				log.error(e);
+				try {
+					socket.close();
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
 			}
 			init = true;
 		}
@@ -95,3 +99,4 @@ public class IncomingTransfer extends Transfer {
 		return SelectionKey.OP_WRITE;
 	}
 }
+

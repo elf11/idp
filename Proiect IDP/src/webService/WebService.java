@@ -10,6 +10,7 @@ import java.util.Vector;
 import org.apache.log4j.*;
 
 import mediator.Mediator;
+import mediator.User;
 
 public class WebService {
 	
@@ -60,7 +61,7 @@ public class WebService {
 			    
 			        String ip = br.readLine().trim();
 			        Integer port = Integer.parseInt(br.readLine().trim());
-			        User user = new ConcreteUser(username, ip, port);
+			        User user = new User(username, ip, port);
 			        
 			        // reading the list of files for each user that it's to be connected
 			        // to the application, the files reside in users/username_folder folder
@@ -79,7 +80,7 @@ public class WebService {
 			        // doar pentru testarea webservice-ului adaugam chestia asta - le scot pentru ultima etapa
 			        localUsers.put(username, localFiles);
 			        
-			        mediator.addUser(user.getName(), user.getFiles());
+			        mediator.addUser(user);
 			    } catch(IOException e) {
 			    	e.printStackTrace();
 			    	log.error("Failed to read the list of files for each user");
