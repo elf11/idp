@@ -49,6 +49,10 @@ public class TransferInfo {
 	public Float getProgress() {
 		return new Float((float)transferedSize / totalSize);
 	}
+	
+	public String getUser() {
+		return mediator.getUserName();
+	}
 
 	public void update(int size, int speed) {
 		transferedSize += size;

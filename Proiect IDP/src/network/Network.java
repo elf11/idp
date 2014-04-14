@@ -46,7 +46,7 @@ public class Network {
 		try {
 			SocketChannel socket = SocketChannel.open();
 			socket.connect(new InetSocketAddress(address, port));
-			OutgoingTransfer transfer = new OutgoingTransfer(info, PATH, fileName);
+			OutgoingTransfer transfer = new OutgoingTransfer(info, PATH);
 			transfer.requestTransfer(socket);
 			socket.configureBlocking(false);
 			listener.registerSocket(socket, transfer);

@@ -24,16 +24,14 @@ public class OutgoingTransfer extends Transfer {
 
 	private boolean init = true;
 	private MappedByteBuffer fileBuffer;
-	private String fileName;
 	private RandomAccessFile file;
 	private static Logger log = Logger.getLogger("OutgoingTransfer ");
 	
-	public OutgoingTransfer(TransferInfo tr, String path, String fileName) {
+	public OutgoingTransfer(TransferInfo tr, String path) {
 		super(tr);
-		this.fileName = fileName;
 		
 		try {
-			file = new RandomAccessFile(path + fileName, "rw");
+			file = new RandomAccessFile(path + tr.getFileName(), "rw");
 		} catch (FileNotFoundException e) {
 			log.error(e);
 		}
@@ -46,14 +44,22 @@ public class OutgoingTransfer extends Transfer {
 	public void requestTransfer(SocketChannel socket) {
 		ByteBuffer nameBuffer = ByteBuffer.allocate(1024);
 		nameBuffer.clear();
-		int size = fileName.length() + 4;
-		nameBuffer.putInt(fileName.length());
-		nameBuffer.put(fileName.getBytes());
+		int size = info.getFileName().length() + info.getUser().length() + 8;
+		nameBuffer.putInt(info.getFileName().length());
+		nameBuffer.put(info.getFileName().getBytes());
+		nameBuffer.putInt(info.getUser().length());
+		nameBuffer.put(info.getUser().getBytes());
 		nameBuffer.flip();
 
 		while(size > 0) {
 			try {
-				size -= socket.write(nameBuffer);
+				int trSize = socket.write(nameBuffer);
+				if (trSize < 0) {
+					log.error("Socket was closed due to an error!");
+					socket.close();
+					size = 0;
+				}
+				size -= trSize;
 				log.info("Wrote on the outgoing socket!");
 			} catch (IOException e) {
 				log.error("Failed to wrote on the outgoing socket!");
@@ -70,7 +76,11 @@ public class OutgoingTransfer extends Transfer {
 			if (init) {
 				/* If this is the first packet, read the size first. */
 				ByteBuffer sizeBuffer = ByteBuffer.allocate(8);
-				socket.read(sizeBuffer);
+				if (socket.read(sizeBuffer) < 0) {
+					log.error("Socket closed due to an error!");
+					socket.close();
+					return;
+				}
 				sizeBuffer.flip();
 				long fileSize = sizeBuffer.getLong();
 				info.setSize(fileSize);
@@ -80,7 +90,12 @@ public class OutgoingTransfer extends Transfer {
 
 			/* Write data to the file */
 			int size = socket.read(fileBuffer);
-			info.update(size, 15000);
+			if (size < 0) {
+				log.error("Socket closed due to an error!");
+				socket.close();
+				return;
+			}
+			info.update(size, getSpeed(size));
 			if (info.isDone()) {
 				/* Transfer is done. Close file and socket. */
 				file.getChannel().close();

@@ -45,7 +45,11 @@ public class NetworkComponentTest {
 		
 		new Network(null, "test/dir1/", "127.0.0.1", 30001);
 		
-		OutgoingTransfer transfer = new OutgoingTransfer(null, "test/dir2/", "inexistentFile");
+		Mediator mediator = mock(Mediator.class);
+		when(mediator.getUserName()).thenReturn("");
+		
+		TransferInfo trInfo = new TransferInfo("", "inexistentFile.txt", 0, 0, 0, mediator);
+		OutgoingTransfer transfer = new OutgoingTransfer(trInfo, "test/dir2/");
 		SocketChannel sock;
 			
 		
@@ -64,12 +68,13 @@ public class NetworkComponentTest {
 	@Test
 	public void transferFile() {
 		
-		TransferInfo trInfo = mock(TransferInfo.class);
 		Mediator mediator = mock(Mediator.class);
+		when(mediator.getUserName()).thenReturn("");
 		
 		new Network(mediator, "test/dir1/", "127.0.0.1", 30002);
+		TransferInfo trInfo = new TransferInfo("", "testFile.txt", 0, 0, 0, mediator);
 		
-		OutgoingTransfer transfer = new OutgoingTransfer(trInfo, "test/dir2/", "testFile.txt");
+		OutgoingTransfer transfer = new OutgoingTransfer(trInfo, "test/dir2/");
 		SocketChannel sock;
 			
 		

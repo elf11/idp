@@ -38,7 +38,12 @@ public class IncomingTransfer extends Transfer {
 			/* Write data to the file */
 			try {
 				int size = socket.write(fileBuffer);
-				info.update(size, 15000);
+				if (size < 0) {
+					log.error("Socket closed due to an error!");
+					socket.close();
+					return;
+				}
+				info.update(size, getSpeed(size));
 				if (info.isDone()) {
 					/* Transfer is done. Close file and socket. */
 					file.getChannel().close();
@@ -60,10 +65,16 @@ public class IncomingTransfer extends Transfer {
 				buf.flip();
 				
 				/* Get the name of the file. */
-				int nameLen = buf.getInt();
-				byte[] nameArray = new byte[nameLen];
+				int len = buf.getInt();
+				byte[] nameArray = new byte[len];
 				buf.get(nameArray);
 				fileName = new String(nameArray);
+				
+				len = buf.getInt();
+				byte[] userArray = new byte[len];
+				buf.get(userArray);
+				String sourceUser = new String(userArray);
+				
 				
 				/* Open the file and map it into memory */
 				file = new RandomAccessFile(network.getPath() + fileName, "r");
@@ -79,7 +90,7 @@ public class IncomingTransfer extends Transfer {
 				log.info("Succesfully sent the file size to the receiving user");
 				
 				/* Register the transfer with the mediator */
-				network.startIncomingTransfer(this, "_temp_", fileName, fileSize);
+				network.startIncomingTransfer(this, sourceUser, fileName, fileSize);
 				init = true;
 			} catch (IOException e) {
 				log.error("Failed to open/read the data socket/file");
