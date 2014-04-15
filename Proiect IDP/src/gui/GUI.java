@@ -36,6 +36,7 @@ import javax.swing.JButton;
 import javax.swing.SwingConstants;
 import javax.swing.JLabel;
 
+import org.apache.log4j.DailyRollingFileAppender;
 import org.apache.log4j.Logger;
 
 import net.miginfocom.swing.MigLayout;
@@ -72,6 +73,7 @@ public class GUI {
 	private JPanel buttonPane;
 	private JLabel nameLabel;
 	private static Logger log = Logger.getLogger("Network ");
+	
 
 	/**
 	 * Constructor, receives an instance of the mediator class and gets the username of the current user.

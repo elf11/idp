@@ -87,19 +87,19 @@
 	<target name="run">
 	    	<parallel>
 	        <java classname="main.NanoShare" failonerror="true" fork="yes">
-	        	<jvmarg line="-Dlog4j.configuration=file:log4j.properties"/>
+	        	<jvmarg line="-Dlog4j.configuration=file:log/andrei.properties"/>
 	            <arg line="andrei"/>
 	            <classpath refid="Proiect IDP.classpath"/>
 	        </java>
 	    	
 	        <java classname="main.NanoShare" failonerror="true" fork="yes">
-	        	<jvmarg line="-Dlog4j.configuration=file:log4j.properties"/>
+	        	<jvmarg line="-Dlog4j.configuration=file:log/oana.properties"/>
 	            <arg line="oana"/>
 	            <classpath refid="Proiect IDP.classpath"/>
 	        </java>
 	            	
 	         <java classname="main.NanoShare" failonerror="true" fork="yes">
-	         	<jvmarg line="-Dlog4j.configuration=file:log4j.properties"/>
+	         	<jvmarg line="-Dlog4j.configuration=file:log/roland.properties"/>
 	            <arg line="roland"/>
 	            <classpath refid="Proiect IDP.classpath"/>
 	         </java>
