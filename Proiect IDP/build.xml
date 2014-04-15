@@ -114,6 +114,15 @@
             <classpath refid="Proiect IDP.classpath"/>
         </junit>
     </target>
+    <target name="NetworkComponentTest">
+        <mkdir dir="${junit.output.dir}"/>
+        <junit fork="yes" printsummary="withOutAndErr">
+            <formatter type="xml"/>
+            <test name="junitTests.NetworkComponentTest" todir="${junit.output.dir}"/>
+            <jvmarg line="-Dlog4j.configuration=file:log4j.properties"/>
+            <classpath refid="Proiect IDP.classpath"/>
+        </junit>
+    </target>
     <target name="Main (17)">
         <java classname="mediator.Main" failonerror="true" fork="yes">
             <classpath refid="Proiect IDP.classpath"/>
