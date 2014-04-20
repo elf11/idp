@@ -36,7 +36,6 @@ import javax.swing.JButton;
 import javax.swing.SwingConstants;
 import javax.swing.JLabel;
 
-import org.apache.log4j.DailyRollingFileAppender;
 import org.apache.log4j.Logger;
 
 import net.miginfocom.swing.MigLayout;
