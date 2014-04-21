@@ -65,6 +65,24 @@
                // No methods generated for meps other than in-out
                 
            /**
+            * auto generated Axis2 call back method for addUser method
+            * override this method for handling normal response from addUser operation
+            */
+           public void receiveResultaddUser(
+                    registry.ClientRegistryStub.AddUserResponse result
+                        ) {
+           }
+
+          /**
+           * auto generated Axis2 Error handler
+           * override this method for handling error response from addUser operation
+           */
+            public void receiveErroraddUser(java.lang.Exception e) {
+            }
+                
+               // No methods generated for meps other than in-out
+                
+           /**
             * auto generated Axis2 call back method for getClients method
             * override this method for handling normal response from getClients operation
             */

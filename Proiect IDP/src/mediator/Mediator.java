@@ -25,7 +25,7 @@ public class Mediator {
 
 	private HashMap<String, User> users = new HashMap<String, User>();
 	
-	public Mediator(String username) throws IOException {
+	public Mediator(String username) throws IOException, UserRegistrationException {
 		currentUser = username;
 		webService = new WebService(this, PATH);
 		gui = new GUI(this);
@@ -75,12 +75,20 @@ public class Mediator {
 		});
 		log.info("Registered the addUser function with the mediator");
 	}
+	
+	/**
+	 * Return a list of all files for a specific user after retrieving it
+	 * from the web service
+	 */
+	public String[] getFilesFromUsers(String userName) {
+		return webService.getFilesFromUser(userName);
+	}
 
 	/**
 	 * Removes a file shared by a user
 	 */
 	public synchronized void removeFileFromUser(final String userName, final String fileName) {
-		users.get(userName).getFiles().removeElement(fileName);
+		webService.removeFilesFromUser(userName, new String[] { fileName });
 		EventQueue.invokeLater(new Runnable() {
 			@Override
 			public void run() {
@@ -95,7 +103,7 @@ public class Mediator {
 	 */
 	public synchronized void addFileToUser(final String userName, final String fileName) {
 		
-		users.get(userName).getFiles().add(fileName);
+		webService.addFilesToUser(userName, new String[] { fileName });
 		EventQueue.invokeLater(new Runnable() {
 			@Override
 			public void run() {
@@ -114,6 +122,9 @@ public class Mediator {
 		return currentUser;
 	}
 
+	/** 
+	 * Remove a user from the list of active users 
+	 */
 	public synchronized void removeUser(final String userName) {
 		if (users.remove(userName) != null) {
 			EventQueue.invokeLater(new Runnable() {
@@ -138,5 +149,12 @@ public class Mediator {
 			}
 		});
 		log.info("Registered an update in the transfer with the mediator");
+	}
+
+	/**
+	 * Signals the web service that the user is logging out
+	 */
+	public void logOut() {
+		webService.removeUser(currentUser);
 	}
 }

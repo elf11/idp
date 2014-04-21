@@ -23,6 +23,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 
 import javax.swing.JToolBar;
@@ -92,6 +94,12 @@ public class GUI {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
+					frmProiectIdp.addWindowListener(new WindowAdapter() {
+						@Override
+						public void windowClosed(WindowEvent e) {
+							mediator.logOut();
+						}
+					});
 					window.frmProiectIdp.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -133,7 +141,7 @@ public class GUI {
 				if (userName != null) {
 					selectedUser = userName;
 					filesModel.clear();
-					for (String file : mediator.getUsers().get(userName).getFiles())
+					for (String file : mediator.getFilesFromUsers(selectedUser))
 						filesModel.addElement(file);
 					
 					if (selectedUser.equals(currentUser)) {

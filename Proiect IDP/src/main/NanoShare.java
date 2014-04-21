@@ -16,7 +16,11 @@ public class NanoShare {
 			System.err.println("Introduceti username-ul pentru autentificare!");
 			System.exit(-1);
 		}
-		new Mediator(args[0]);
+		try {
+			new Mediator(args[0]);
+		} catch (Exception e) {
+			System.exit(0);
+		}
 	}
 	
 }
