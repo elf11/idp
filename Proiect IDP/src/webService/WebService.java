@@ -64,67 +64,67 @@ public class WebService {
 		File dir = new File(path);
 		BufferedReader br = null;
 		
-		for (File f : dir.listFiles()) {
-			if (f.isFile() && f.getName().equals(mediator.getUserName() + ".txt")) {
-				try {
-					String userName = f.getName().substring(0, f.getName().length() - 4);
-					br = new BufferedReader(new FileReader(f.getPath()));
+		String file_name = mediator.getUserName() + ".txt";
+		File f = new File(path + "/" + file_name);
+		String userName = mediator.getUserName();
+		
+		
+		try {
+			br = new BufferedReader(new FileReader(f.getPath()));
 			    
-			        String ip = br.readLine().trim();
-			        Integer port = Integer.parseInt(br.readLine().trim());
+			String ip = br.readLine().trim();
+			Integer port = Integer.parseInt(br.readLine().trim());
 			        
 			        // reading the list of files for each user that it's to be connected
 			        // to the application, the files reside in users/username_folder folder
-			        File userDir = new File(path + "/" + userName);
-			        ArrayList<String> files = new ArrayList<String>();
-			        for (File userFile : userDir.listFiles()) {
-			        	if (userFile.isFile()) {
-			        		files.add(userFile.getName());
-			        	}
-			        }
+			File userDir = new File(path + "/" + userName);
+			ArrayList<String> files = new ArrayList<String>();
+			for (File userFile : userDir.listFiles()) {
+				if (userFile.isFile()) {
+					files.add(userFile.getName());
+				}	
+			}
 			        
 			        /* register user with the service */
-			        AddUser req = new AddUser();
-			        req.setName(userName);
-			        req.setIp(ip);
-			        req.setPort(port);
-			        AddUserResponse res = service.addUser(req);
-			        int id = res.get_return();
+			AddUser req = new AddUser();
+			req.setName(userName);
+			req.setIp(ip);
+			req.setPort(port);
+			AddUserResponse res = service.addUser(req);
+			int id = res.get_return();
 			        /*if (id == 0) {
 				        log.error("Failed to register user " + userName + ". A user with that name already exists.");
 			        	throw new UserRegistrationException("User could not be registered.");
 			        }*/
                     
-			        mediator.addUser(new User(id, userName, ip, port));
+			mediator.addUser(new User(id, userName, ip, port));
                     
-                    /* register the users files */
-                    addFilesToUser(userName, files.toArray(new String[files.size()]));
+            /* register the users files */
+            addFilesToUser(userName, files.toArray(new String[files.size()]));
                     
-                    /* schedule getting users every 5 seconds */
-                    pool.scheduleAtFixedRate(new Runnable() {
+            /* schedule getting users every 5 seconds */
+            pool.scheduleAtFixedRate(new Runnable() {
 						
-						@Override
-						public void run() {
-							getClients();
-						}
-					}, 0, 5, TimeUnit.SECONDS);
+            	@Override
+            	public void run() {
+            		getClients();
+            	}
+			}, 0, 5, TimeUnit.SECONDS);
 
-			    } catch(IOException e) {
-			    	e.printStackTrace();
-			    	log.error("Failed to read the list of files for each user");
-			    } finally {
-			        try {
-			        	if (br != null) {
-			        		br.close();
-			        	}
-					} catch (IOException e) {
-						log.error("Failed to close the buffer reader");
-						e.printStackTrace();
-					}
-			    }
-				return;
-			}
-		}	
+		} catch(IOException e) {
+			   e.printStackTrace();
+			   log.error("Failed to read the list of files for each user");
+		} finally {
+			   try {
+			        if (br != null) {
+			        	br.close();
+			        }
+				} catch (IOException e) {
+					log.error("Failed to close the buffer reader");
+					e.printStackTrace();
+				}
+		}
+		return;
 	}
 	
 	/**
@@ -216,8 +216,9 @@ public class WebService {
 		req.setDeletedFiles(files);
 		try {
 			service.removeFilesFromUser(req);
+			log.info("Removing files from user " + userName);
 		} catch (RemoteException e) {
-			log.error(e);
+			log.error("Error deleting files from user ");
 			e.printStackTrace();
 		}
 	}
@@ -231,8 +232,9 @@ public class WebService {
 		req.setName(userName);
 		try {
 			service.removeUser(req);
+			log.info("Removing user " + userName);
 		} catch (RemoteException e) {
-			log.error(e);
+			log.error("Failed to delete user " + userName);
 			e.printStackTrace();
 		}
 	}

@@ -94,12 +94,12 @@ public class GUI {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					frmProiectIdp.addWindowListener(new WindowAdapter() {
-						@Override
-						public void windowClosed(WindowEvent e) {
-							mediator.logOut();
-						}
-					});
+					frmProiectIdp.addWindowListener(new java.awt.event.WindowAdapter() {
+				        public void windowClosing(WindowEvent winEvt) {
+				        	mediator.logOut();
+				            System.exit(0);
+				        }
+				    });
 					window.frmProiectIdp.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
