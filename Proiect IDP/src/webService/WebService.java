@@ -1,5 +1,6 @@
 package webService;
 
+import java.awt.EventQueue;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -34,6 +35,7 @@ public class WebService {
 	private String path;
 	private ClientRegistryStub service;
 	private ScheduledExecutorService pool;
+	String[] files1 = null;
 	
 	Logger log = Logger.getLogger("WebService");
 	
@@ -173,23 +175,32 @@ public class WebService {
 	/**
 	 * Retrieve all the files from the web service for a specific user
 	 */
-	public String[] getFilesFromUser(String userName) {
-		GetFilesFromUser req = new GetFilesFromUser();
-		req.setUser(userName);
-		GetFilesFromUserResponse res;
-		String[] files = null;
-		try {
-			res = service.getFilesFromUser(req);
-			files = res.get_return();
-		} catch (RemoteException e) {
-			log.error(e);
-			e.printStackTrace();
-		}
+	public String[] getFilesFromUser(final String userName) {
+		
+		EventQueue.invokeLater(new Runnable() {
 
-		if (files == null)
+			@Override
+			public void run() {
+				// TODO Auto-generated method stub
+				GetFilesFromUser req = new GetFilesFromUser();
+				req.setUser(userName);
+				GetFilesFromUserResponse res;
+				String[] files = null;
+				try {
+					res = service.getFilesFromUser(req);
+					files = res.get_return();
+				} catch (RemoteException e) {
+					log.error(e);
+					e.printStackTrace();
+				}
+			files1 = files;	
+			} 
+		});
+		
+		if (files1 == null)
 			return new String[0];
 		else
-			return files;
+			return files1;
 	}
 	
 	/**
