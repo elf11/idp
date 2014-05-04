@@ -1,6 +1,5 @@
 package webService;
 
-import java.awt.EventQueue;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -15,6 +14,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.axis2.AxisFault;
 import org.apache.log4j.*;
 
+import registry.ClientRegistryCallbackHandler;
 import registry.ClientRegistryStub;
 import registry.ClientRegistryStub.AddFilesToUser;
 import registry.ClientRegistryStub.AddUser;
@@ -63,7 +63,6 @@ public class WebService {
 	 * @throws IOException 
 	 */
 	public void loadConfig() throws UserRegistrationException {
-		File dir = new File(path);
 		BufferedReader br = null;
 		
 		String file_name = mediator.getUserName() + ".txt";
@@ -77,8 +76,8 @@ public class WebService {
 			String ip = br.readLine().trim();
 			Integer port = Integer.parseInt(br.readLine().trim());
 			        
-			        // reading the list of files for each user that it's to be connected
-			        // to the application, the files reside in users/username_folder folder
+			/* reading the list of files for each user that it's to be connected
+			to the application, the files reside in users/username_folder folder */
 			File userDir = new File(path + "/" + userName);
 			ArrayList<String> files = new ArrayList<String>();
 			for (File userFile : userDir.listFiles()) {
@@ -87,17 +86,17 @@ public class WebService {
 				}	
 			}
 			        
-			        /* register user with the service */
+			/* register user with the service */
 			AddUser req = new AddUser();
 			req.setName(userName);
 			req.setIp(ip);
 			req.setPort(port);
 			AddUserResponse res = service.addUser(req);
 			int id = res.get_return();
-			        /*if (id == 0) {
-				        log.error("Failed to register user " + userName + ". A user with that name already exists.");
-			        	throw new UserRegistrationException("User could not be registered.");
-			        }*/
+			if (id == 0) {
+				log.error("Failed to register user " + userName + ". A user with that name already exists.");
+				throw new UserRegistrationException("User could not be registered.");
+			}
                     
 			mediator.addUser(new User(id, userName, ip, port));
                     
@@ -175,32 +174,21 @@ public class WebService {
 	/**
 	 * Retrieve all the files from the web service for a specific user
 	 */
-	public String[] getFilesFromUser(final String userName) {
-		
-		EventQueue.invokeLater(new Runnable() {
+	public void getFilesFromUser(final String userName) {
 
-			@Override
-			public void run() {
-				// TODO Auto-generated method stub
-				GetFilesFromUser req = new GetFilesFromUser();
-				req.setUser(userName);
-				GetFilesFromUserResponse res;
-				String[] files = null;
-				try {
-					res = service.getFilesFromUser(req);
-					files = res.get_return();
-				} catch (RemoteException e) {
-					log.error(e);
-					e.printStackTrace();
+		GetFilesFromUser req = new GetFilesFromUser();
+		req.setUser(userName);
+		try {
+			ClientRegistryCallbackHandler callBack = new ClientRegistryCallbackHandler(mediator) {
+				public void receiveResultgetFilesFromUser(GetFilesFromUserResponse result) {
+					((Mediator)getClientData()).updateFilesForUser(result.get_return());
 				}
-			files1 = files;	
-			} 
-		});
-		
-		if (files1 == null)
-			return new String[0];
-		else
-			return files1;
+			};
+			service.startgetFilesFromUser(req, callBack);
+		} catch (RemoteException e) {
+			log.error(e);
+			e.printStackTrace();
+		}
 	}
 	
 	/**
@@ -249,5 +237,4 @@ public class WebService {
 			e.printStackTrace();
 		}
 	}
-
 }

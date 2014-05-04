@@ -23,7 +23,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 
@@ -141,8 +140,9 @@ public class GUI {
 				if (userName != null) {
 					selectedUser = userName;
 					filesModel.clear();
-					for (String file : mediator.getFilesFromUsers(selectedUser))
-						filesModel.addElement(file);
+
+					// asynchronous invocation - Callback will set files.
+					mediator.getFilesFromUsers(selectedUser);
 					
 					if (selectedUser.equals(currentUser)) {
 						addFileButton.setEnabled(true);
@@ -455,5 +455,10 @@ public class GUI {
 			log.info("Removed the file " + filesList.getSelectedValue() + " from the user " + selectedUser);
 			mediator.removeFileFromUser(selectedUser, filesList.getSelectedValue());
 		}
-    };
+    }
+
+	public void updateFilesForUser(String[] files) {
+		for (String file : files)
+			filesModel.addElement(file);
+	};
 }

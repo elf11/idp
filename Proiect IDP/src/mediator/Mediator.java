@@ -80,8 +80,9 @@ public class Mediator {
 	 * Return a list of all files for a specific user after retrieving it
 	 * from the web service
 	 */
-	public String[] getFilesFromUsers(String userName) {
-		return webService.getFilesFromUser(userName);
+	public void getFilesFromUsers(String userName) {
+		//return 
+				webService.getFilesFromUser(userName);
 	}
 
 	/**
@@ -156,5 +157,19 @@ public class Mediator {
 	 */
 	public void logOut() {
 		webService.removeUser(currentUser);
+	}
+
+	/**
+	 * Asynchronously updates the file list when a response arrives.
+	 */
+	public void updateFilesForUser(final String[] files) {
+			EventQueue.invokeLater(new Runnable() {
+				@Override
+				public void run() {
+					gui.updateFilesForUser(files);
+				}
+			});
+			log.info("Registered an update in the transfer with the mediator");
+		
 	}
 }
