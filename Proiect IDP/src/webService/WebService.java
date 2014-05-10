@@ -110,12 +110,15 @@ public class WebService {
 						
             	@Override
             	public void run() {
-            		getClients();
+            		try {
+            			getClients();
+            		} catch (Exception e) {
+            			log.error(e);
+            		}
             	}
 			}, 0, 5, TimeUnit.SECONDS);
 
 		} catch(IOException e) {
-			   e.printStackTrace();
 			   log.error("Failed to read the list of files for each user");
 		} finally {
 			   try {
@@ -124,7 +127,6 @@ public class WebService {
 			        }
 				} catch (IOException e) {
 					log.error("Failed to close the buffer reader");
-					e.printStackTrace();
 				}
 		}
 		return;
@@ -155,6 +157,7 @@ public class WebService {
 	        }
 	        
 			/* Check for clients that have logged out*/
+	        ArrayList<String> removedUsers = new ArrayList<String>();
 	        for (Entry<String, User> loggedClient : mediator.getUsers().entrySet()) {
 	        	boolean found = false;
 	        	for(registry.ClientRegistryStub.User client : clients) {
@@ -163,12 +166,15 @@ public class WebService {
 	        		}
 	        	}
 	        	if (!found) {
-        			mediator.removeUser(loggedClient.getKey());
+        			removedUsers.add(loggedClient.getKey());
 	        	}
+	        }
+	        
+	        for (String user : removedUsers) {
+	        	mediator.removeUser(user);
 	        }
 		} catch (RemoteException e) {
 			log.error(e);
-			e.printStackTrace();
 		}
 	}
 	

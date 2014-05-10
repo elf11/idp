@@ -164,6 +164,7 @@ public class Mediator {
 	 * @param user 
 	 */
 	public void updateFilesForUser(final String user, final String[] files) {
+		if (files != null) {
 			EventQueue.invokeLater(new Runnable() {
 				@Override
 				public void run() {
@@ -171,6 +172,6 @@ public class Mediator {
 				}
 			});
 			log.info("Registered an update in the transfer with the mediator");
-		
+		}
 	}
 }
