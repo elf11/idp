@@ -19,6 +19,7 @@ public class NanoShare {
 		try {
 			new Mediator(args[0]);
 		} catch (Exception e) {
+			e.printStackTrace();
 			System.exit(0);
 		}
 	}

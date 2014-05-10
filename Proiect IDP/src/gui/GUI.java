@@ -457,8 +457,11 @@ public class GUI {
 		}
     }
 
-	public void updateFilesForUser(String[] files) {
-		for (String file : files)
-			filesModel.addElement(file);
+	public void updateFilesForUser(String user, String[] files) {
+		if (selectedUser.equals(user)) {
+			filesModel.clear();
+			for (String file : files)
+				filesModel.addElement(file);
+		}
 	};
 }

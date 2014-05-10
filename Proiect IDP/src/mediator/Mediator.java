@@ -25,7 +25,7 @@ public class Mediator {
 
 	private HashMap<String, User> users = new HashMap<String, User>();
 	
-	public Mediator(String username) throws IOException, UserRegistrationException {
+	public Mediator(String username) throws IOException, UserRegistrationException, WebServiceConnectionException {
 		currentUser = username;
 		webService = new WebService(this, PATH);
 		gui = new GUI(this);
@@ -135,7 +135,7 @@ public class Mediator {
 				}	
 			});
 		}
-		log.info("Registered the removing of an user with the mediator");
+		log.info("Registered the removing of a user with the mediator");
 	}
 	
 	/**
@@ -161,12 +161,13 @@ public class Mediator {
 
 	/**
 	 * Asynchronously updates the file list when a response arrives.
+	 * @param user 
 	 */
-	public void updateFilesForUser(final String[] files) {
+	public void updateFilesForUser(final String user, final String[] files) {
 			EventQueue.invokeLater(new Runnable() {
 				@Override
 				public void run() {
-					gui.updateFilesForUser(files);
+					gui.updateFilesForUser(user, files);
 				}
 			});
 			log.info("Registered an update in the transfer with the mediator");

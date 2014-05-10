@@ -28,6 +28,7 @@ import registry.ClientRegistryStub.RemoveUser;
 import mediator.Mediator;
 import mediator.User;
 import mediator.UserRegistrationException;
+import mediator.WebServiceConnectionException;
 
 public class WebService {
 	
@@ -35,7 +36,6 @@ public class WebService {
 	private String path;
 	private ClientRegistryStub service;
 	private ScheduledExecutorService pool;
-	String[] files1 = null;
 	
 	Logger log = Logger.getLogger("WebService");
 	
@@ -44,14 +44,6 @@ public class WebService {
 		this.path = path;
 		
 		pool = Executors.newScheduledThreadPool(1);
-
-		try {
-			service = new ClientRegistryStub();
-		} catch (AxisFault e) {
-			log.error(e);
-			e.printStackTrace();
-		}
-		log.info("Succesfully initialized the WebService");
 	}
 	
 	/**
@@ -59,10 +51,11 @@ public class WebService {
 	 * initial configurations
 	 * @param path - path to the users/ folder where all the *.txt
 	 * files are stored
+	 * @throws WebServiceConnectionException 
 	 * @throws Exception 
 	 * @throws IOException 
 	 */
-	public void loadConfig() throws UserRegistrationException {
+	public void loadConfig() throws UserRegistrationException, WebServiceConnectionException {
 		BufferedReader br = null;
 		
 		String file_name = mediator.getUserName() + ".txt";
@@ -75,6 +68,15 @@ public class WebService {
 			    
 			String ip = br.readLine().trim();
 			Integer port = Integer.parseInt(br.readLine().trim());
+			String wsAddr = br.readLine().trim();
+			
+			try {
+				service = new ClientRegistryStub(wsAddr);
+			} catch (AxisFault e) {
+				log.error(e);
+				throw new WebServiceConnectionException("Cannot connect to webservice");
+			}
+			log.info("Succesfully initialized the WebService");
 			        
 			/* reading the list of files for each user that it's to be connected
 			to the application, the files reside in users/username_folder folder */
@@ -138,7 +140,6 @@ public class WebService {
 		try {
 			res = service.getClients(req);
 			registry.ClientRegistryStub.User[] clients = res.get_return();
-			System.out.println(clients);
 			
 			/* Check for new clients */
 	        for(registry.ClientRegistryStub.User client : clients) {
@@ -180,8 +181,9 @@ public class WebService {
 		req.setUser(userName);
 		try {
 			ClientRegistryCallbackHandler callBack = new ClientRegistryCallbackHandler(mediator) {
+				final String user = userName;
 				public void receiveResultgetFilesFromUser(GetFilesFromUserResponse result) {
-					((Mediator)getClientData()).updateFilesForUser(result.get_return());
+					((Mediator)getClientData()).updateFilesForUser(user, result.get_return());
 				}
 			};
 			service.startgetFilesFromUser(req, callBack);

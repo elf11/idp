@@ -7,6 +7,7 @@ import java.util.HashMap;
 import mediator.Mediator;
 import mediator.User;
 import mediator.UserRegistrationException;
+import mediator.WebServiceConnectionException;
 
 import org.apache.log4j.Logger;
 import org.junit.Test;
@@ -23,13 +24,13 @@ public class WebServiceTest {
 	Logger log = Logger.getLogger("WebServiceTest");
 
 	@Test
-	public void testWebService() throws IOException, UserRegistrationException {
+	public void testWebService() throws IOException, UserRegistrationException, WebServiceConnectionException {
 		Mediator core = new Mediator(userName);
 		ws = new WebService(core, "config");
 		
 		assert (ws) != null;
 		
-		ws.setTestTrue();
+		//ws.setTestTrue();
 		ws.loadConfig();
 		ws.getClients();
 		ws.loadConfig();

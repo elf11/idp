@@ -1,2 +1,3 @@
 127.0.0.3
 10003
+http://localhost:8080/IDPServer/services/ClientRegistry.ClientRegistryHttpSoap12Endpoint/

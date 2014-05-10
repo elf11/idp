@@ -19,7 +19,6 @@ public class ClientRegistry {
 		for (Entry<String, User> e : clients.entrySet()) {
 			clientList.add(e.getValue());
 		}
-		System.out.println(clientList);
 		return clientList;
 	}
 	
@@ -43,7 +42,6 @@ public class ClientRegistry {
 	
 	public int addUser(String name, String ip, int port) {
 		if (!clients.containsKey(name)) {
-			System.out.println("adding " + name);
 			files.put(name, new ArrayList<String>());
 			clients.put(name, new User(++id, name, ip, port));
 			return id;
